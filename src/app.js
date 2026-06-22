@@ -7,6 +7,9 @@ const app = express();
 
 app.use(express.json());
 
+const usersRouter = require('./routes/users');
+app.use('/api/users', usersRouter);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', project: 'Tonaris API' });
 });
