@@ -97,4 +97,16 @@ async function getById(req, res, next) {
   }
 }
 
-module.exports = { register, login, getById };
+
+// GET /api/users/all
+async function getAll(req, res, next) {
+  try {
+    const { rows } = await pool.query(
+      'SELECT user_id, name, email, role, created_at FROM users ORDER BY created_at DESC'
+    );
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+}
+module.exports = { register, login, getById, getAll };
