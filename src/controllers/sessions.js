@@ -37,4 +37,4 @@ function getSessionsByUser(req, res) {
   res.json(userSessions);
 }
 
-module.exports = { createSession, getSessionsByUser };
+module.exports = { createSession, getSessionsByUser, sessions };

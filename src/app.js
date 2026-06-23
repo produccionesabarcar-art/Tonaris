@@ -13,6 +13,9 @@ app.use('/api/users', usersRouter);
 const sessionsRouter = require('./routes/sessions');
 app.use('/api/sessions', sessionsRouter);
 
+const progressRouter = require('./routes/progress');
+app.use('/api/progress', progressRouter);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', project: 'Tonaris API' });
 });
