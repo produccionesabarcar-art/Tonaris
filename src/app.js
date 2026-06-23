@@ -10,6 +10,9 @@ app.use(express.json());
 const usersRouter = require('./routes/users');
 app.use('/api/users', usersRouter);
 
+const sessionsRouter = require('./routes/sessions');
+app.use('/api/sessions', sessionsRouter);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', project: 'Tonaris API' });
 });
