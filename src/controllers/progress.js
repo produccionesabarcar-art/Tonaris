@@ -1,34 +1,45 @@
-const { sessions } = require('./sessions');
+const pool = require('../db/pool');
 
 /**
  * Obtiene el progreso de un usuario.
  * GET /api/progress/:userId
  */
-function getUserProgress(req, res) {
+async function getUserProgress(req, res) {
   const { userId } = req.params;
-  const userSessions = sessions.filter(s => s.userId === userId);
 
-  if (userSessions.length === 0) {
-    return res.status(404).json({ error: 'No hay sesiones para este usuario.' });
+  try {
+    const result = await pool.query(
+      `SELECT
+        COUNT(*) AS total_sessions,
+        ROUND(AVG(accuracy)) AS avg_accuracy,
+        MAX(accuracy) AS best_accuracy,
+        SUM(correct) AS total_correct,
+        SUM(total) AS total_questions,
+        MAX(created_at) AS last_session
+       FROM sessions
+       WHERE user_id = $1`,
+      [userId]
+    );
+
+    const data = result.rows[0];
+
+    if (!data.total_sessions || data.total_sessions === '0') {
+      return res.status(404).json({ error: 'No hay sesiones para este usuario.' });
+    }
+
+    res.json({
+      userId,
+      totalSessions: parseInt(data.total_sessions),
+      avgAccuracy: parseInt(data.avg_accuracy),
+      bestAccuracy: parseInt(data.best_accuracy),
+      totalCorrect: parseInt(data.total_correct),
+      totalQuestions: parseInt(data.total_questions),
+      lastSession: data.last_session
+    });
+  } catch (err) {
+    console.error('[getUserProgress]', err.message);
+    res.status(500).json({ error: 'Error al obtener progreso.' });
   }
-
-  const totalSessions = userSessions.length;
-  const avgAccuracy = Math.round(
-    userSessions.reduce((sum, s) => sum + s.accuracy, 0) / totalSessions
-  );
-  const bestAccuracy = Math.max(...userSessions.map(s => s.accuracy));
-  const totalCorrect = userSessions.reduce((sum, s) => sum + s.correct, 0);
-  const totalQuestions = userSessions.reduce((sum, s) => sum + s.total, 0);
-
-  res.json({
-    userId,
-    totalSessions,
-    avgAccuracy,
-    bestAccuracy,
-    totalCorrect,
-    totalQuestions,
-    lastSession: userSessions[userSessions.length - 1].createdAt
-  });
 }
 
 module.exports = { getUserProgress };
