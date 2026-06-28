@@ -7,7 +7,7 @@ const SALT_ROUNDS = 10;
 // POST /api/users/register
 async function register(req, res, next) {
   try {
-    const { user_id, name, email, password, role } = req.body;
+    const { user_id, name, email, password, role, alias } = req.body;
 
     if (!user_id || !name || !email || !password) {
       return res.status(400).json({ error: 'Faltan campos obligatorios.' });
@@ -17,10 +17,10 @@ async function register(req, res, next) {
     const userRole = role === 'admin' ? 'admin' : 'estudiante';
 
     const { rows } = await pool.query(
-      `INSERT INTO users (user_id, name, email, password, role)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING user_id, name, email, role, created_at`,
-      [user_id, name, email, hashedPassword, userRole]
+      `INSERT INTO users (user_id, name, email, password, role, alias)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING user_id, name, email, role, alias, created_at`,
+      [user_id, name, email, hashedPassword, userRole, alias || null]
     );
 
     res.status(201).json(rows[0]);
@@ -109,4 +109,25 @@ async function getAll(req, res, next) {
     next(err);
   }
 }
-module.exports = { register, login, getById, getAll };
+// PATCH /api/users/:userId/alias
+async function updateAlias(req, res, next) {
+  try {
+    const { userId } = req.params;
+    const { alias } = req.body;
+    if (!alias || alias.length > 10) {
+      return res.status(400).json({ error: 'Alias requerido, máximo 10 caracteres.' });
+    }
+    const { rows } = await pool.query(
+      'UPDATE users SET alias = $1 WHERE user_id = $2 RETURNING user_id, name, alias',
+      [alias.toUpperCase(), userId]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, getById, getAll, updateAlias };

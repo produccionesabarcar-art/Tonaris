@@ -19,7 +19,7 @@ export default function Leaderboard() {
         <thead>
           <tr>
             <th style={styles.th}>#</th>
-            <th style={styles.th}>Nombre</th>
+            <th style={styles.th}>Alias</th>
             <th style={styles.th}>Sesiones</th>
             <th style={styles.th}>Precisión promedio</th>
           </tr>
@@ -28,7 +28,7 @@ export default function Leaderboard() {
           {data.map((u, i) => (
             <tr key={u.user_id}>
               <td style={styles.td}>{i + 1}</td>
-              <td style={styles.td}>{u.name}</td>
+              <td style={styles.td}>{u.alias || u.name}</td>
               <td style={styles.td}>{u.total_sessions}</td>
               <td style={styles.td}>{u.avg_accuracy}%</td>
             </tr>
