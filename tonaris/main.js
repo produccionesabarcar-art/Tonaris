@@ -1621,32 +1621,49 @@ function updateLeaderboardScore(name, score) {
 /**
  * @description Renderiza el Top 100 del Leaderboard global.
  */
-function renderLeaderboard() {
+async function renderLeaderboard() {
   if (!DOM.leaderboardBody) return;
   DOM.leaderboardBody.innerHTML = '';
-  let leaderboard = JSON.parse(localStorage.getItem('tonaris_leaderboard') || '[]');
 
-  // Si está vacía la tabla, autogenerar datos iniciales de ejemplo/relleno con nombres de músicos famosos
-  if (leaderboard.length === 0) {
-    const defaultList = [
-      { name: 'Mozart', score: 1500 },
-      { name: 'Beethoven', score: 1400 },
-      { name: 'Bach', score: 1300 },
-      { name: 'Chopin', score: 1100 },
-      { name: 'Debussy', score: 950 },
-      { name: 'Ravel', score: 800 }
-    ];
-    if (State.progress) {
-      defaultList.push({
-        name: State.progress.name,
-        score: State.progress.streak.current * 100 + (State.progress.sessionsSummary ? State.progress.sessionsSummary.length * 50 : 0)
-      });
+  let entries = [];
+
+  try {
+    const apiData = await apiGetLeaderboard();
+    const list = apiData?.data || apiData;
+    if (list && list.length > 0) {
+      entries = list.map(entry => ({
+        name: entry.alias || entry.name,
+        score: parseInt(entry.avg_accuracy) || 0
+      }));
     }
-    leaderboard = defaultList.sort((a, b) => b.score - a.score).slice(0, 100);
-    localStorage.setItem('tonaris_leaderboard', JSON.stringify(leaderboard));
+  } catch (e) {
+    // API falló — fallback a localStorage
   }
 
-  leaderboard.forEach((entry, idx) => {
+  if (entries.length === 0) {
+    let leaderboard = JSON.parse(localStorage.getItem('tonaris_leaderboard') || '[]');
+    if (leaderboard.length === 0) {
+      const defaultList = [
+        { name: 'Mozart', score: 1500 },
+        { name: 'Beethoven', score: 1400 },
+        { name: 'Bach', score: 1300 },
+        { name: 'Chopin', score: 1100 },
+        { name: 'Debussy', score: 950 },
+        { name: 'Ravel', score: 800 }
+      ];
+      if (State.progress) {
+        defaultList.push({
+          name: State.progress.name,
+          score: State.progress.streak.current * 100 + (State.progress.sessionsSummary ? State.progress.sessionsSummary.length * 50 : 0)
+        });
+      }
+      leaderboard = defaultList.sort((a, b) => b.score - a.score).slice(0, 100);
+      localStorage.setItem('tonaris_leaderboard', JSON.stringify(leaderboard));
+    }
+    entries = leaderboard;
+  }
+
+  entries.forEach((entry, idx) => {
     const pos = idx + 1;
     let rankStyle = '';
     let medal = '';
