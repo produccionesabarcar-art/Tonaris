@@ -16,10 +16,12 @@ app.use(express.json());
 const usersRouter = require('./routes/users');
 const sessionsRouter = require('./routes/sessions');
 const progressRouter = require('./routes/progress');
+const analyticsRouter = require('./routes/analytics');
 
 app.use('/api/users', usersRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/progress', progressRouter);
+app.use('/api/analytics', analyticsRouter);
 
 // Health check
 app.get('/health', (req, res) => {
