@@ -77,13 +77,11 @@ async function getSummary(req, res) {
     const { userId } = req.params;
     const query = `
       SELECT
-        COUNT(session_id) as total_sessions,
-        AVG(accuracy) as avg_accuracy,
+        COUNT(*) as total_sessions,
+        ROUND(AVG(accuracy)) as avg_accuracy,
         MAX(accuracy) as best_score
-      FROM exercise_results
-      JOIN sessions ON exercise_results.session_id = sessions.session_id
-      WHERE exercise_results.user_id = $1
-        AND sessions.user_id = $1;
+      FROM sessions
+      WHERE user_id = $1;
     `;
     const result = await pool.query(query, [userId]);
     res.status(200).json(successResponse(result.rows[0]));

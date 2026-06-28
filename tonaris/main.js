@@ -794,7 +794,7 @@ function getTonalityOfDay() {
 /**
  * @description Actualiza el dashboard con los datos del progreso actual.
  */
-function renderDashboard() {
+async function renderDashboard() {
   const prog = State.progress;
   const level = LEVELS[prog.currentLevel - 1];
   const tonality = getTonalityOfDay();
@@ -837,6 +837,25 @@ function renderDashboard() {
     // Solo mostrar si no es de hoy
     if (last.date !== today) {
       // Se podría renderizar en el card — extendible
+    }
+  }
+
+  // Enriquecer con datos reales de la API
+  const user = apiGetCurrentUser();
+  if (user) {
+    try {
+      const summary = await apiGetSummary(user.user_id);
+      if (summary && summary.data) {
+        const d = summary.data;
+        if (d.total_sessions) {
+          DOM.dashProgFrac.textContent = `${d.total_sessions} sesiones · Nivel ${prog.currentLevel} / 16`;
+        }
+        if (d.best_score) {
+          DOM.streakVal.textContent = prog.streak.current;
+        }
+      }
+    } catch (e) {
+      // API falló — dashboard local sigue funcionando
     }
   }
 }
