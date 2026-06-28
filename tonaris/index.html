@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<!--
+  TONARIS — Entrenamiento Auditivo Funcional
+  Empresa: ABARCAR
+  Versión: 1.0.0
+  Arquitectura: SPA sin framework — Vanilla HTML/CSS/JS
+  Audio: Web Audio API puro — sin archivos externos (Netlify safe)
+  Datos: Google Sheets via Apps Script
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Tonaris — Entrena tu oído musical sin Do-Re-Mi. 10 minutos al día. Por ABARCAR." />
+  <meta name="theme-color" content="#0A0A0C" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Tonaris por ABARCAR" />
+  <meta property="og:description" content="Aprende a escuchar música. Sin teoría. 10 minutos al día." />
+  <meta property="og:type" content="website" />
+
+  <title>Tonaris — ABARCAR</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- Skip link — accesibilidad teclado -->
+  <a href="#main" class="skip-link">Ir al contenido</a>
+
+  <!-- Fondo ambiental — reacciona al color de la sílaba activa -->
+  <div class="ambient" id="ambient" aria-hidden="true"></div>
+
+  <!-- Wrapper centrado de la app -->
+  <div class="app-wrap">
+
+    <!-- ======================================================
+         HEADER — fijo en todas las pantallas
+         ====================================================== -->
+    <header class="hdr" role="banner">
+
+      <!-- Marca -->
+      <div class="hdr__brand">
+        <!-- Logo ABARCAR —marca vectorial oficial -->
+        <div class="hdr__logo" aria-label="ABARCAR" role="img">
+          <!-- Símbolo triangular -->
+          <img src="LogoSoloTriangulo.svg" class="hdr__logo-svg" alt="" aria-hidden="true">
+        </div>
+        <div class="hdr__brand-text">
+          <div class="hdr__name">Tonaris</div>
+          <div class="hdr__company">
+            <img src="LogoSoloAbarcar.svg" class="hdr__company-img" alt="ABARCAR">
+          </div>
+        </div>
+      </div>
+
+      <!-- Info derecha -->
+      <div class="hdr__right">
+        <button type="button" class="hdr__scale-btn" id="btn-hdr-scale" aria-label="Escuchar escala en cualquier momento">
+          <span class="hdr__scale-lbl">Presiona para escuchar la escala actual</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        </button>
+        <span class="hdr__streak" id="hdr-streak" aria-label="Racha de días" style="display:none">
+          🔥 <span id="streak-val">0</span>
+        </span>
+      </div>
+
+    </header>
+
+    <!-- Timer de sesión — visible solo durante sesión -->
+    <div class="timer-bar" id="timer-bar" style="display:none" role="timer" aria-live="polite" aria-label="Tiempo de sesión">
+      <span class="timer-bar__icon" aria-hidden="true">⏱</span>
+      <span class="timer-bar__val" id="timer-val">15:00</span>
+      <div class="timer-track" aria-hidden="true">
+        <div class="timer-fill" id="timer-fill" style="width:100%"></div>
+      </div>
+      <button type="button" id="btn-exit-session" style="margin-left: 10px; background: #C8473A; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;">Salir de la sesión</button>
+    </div>
+
+    <!-- ======================================================
+         MAIN — contenedor de pantallas
+         ====================================================== -->
+    <main id="main" role="main">
+
+      <!-- ====================================================
+           PANTALLA 1: LANDING
+           ==================================================== -->
+      <section class="screen landing screen--active" id="screen-landing" aria-labelledby="landing-title">
+
+        <!-- Logo ABARCAR grande -->
+        <div class="landing__brand">
+          <div class="landing__logo" role="img" aria-label="Símbolo ABARCAR">
+            <img src="LogoSoloTriangulo.svg" class="landing__logo-svg" alt="" aria-hidden="true">
+          </div>
+          <div class="landing__wordmark">
+            <img src="LogoSoloAbarcar.svg" class="landing__wordmark-svg" alt="ABARCAR">
+          </div>
+        </div>
+
+        <div>
+          <h1 class="landing__title" id="landing-title">
+            Aprende a escuchar<br><span>música.</span>
+          </h1>
+        </div>
+
+        <p class="landing__sub">
+          Sin Do-Re-Mi. Sin teoría.<br>
+          Solo oído, sensación y 10 minutos al día.
+        </p>
+
+        <!-- Preview de las 7 sílabas -->
+        <div class="landing__chips" aria-label="Las 7 sílabas del sistema ABARCAR" role="list">
+          <span class="chip chip--md chip--ha" role="listitem" aria-label="Ha — Tónica">Ha</span>
+          <span class="chip chip--md chip--ki" role="listitem" aria-label="Ki — Supertónica">Ki</span>
+          <span class="chip chip--md chip--da" role="listitem" aria-label="Da — Mediante">Da</span>
+          <span class="chip chip--md chip--su" role="listitem" aria-label="Su — Subdominante">Su</span>
+          <span class="chip chip--md chip--go" role="listitem" aria-label="Go — Dominante">Go</span>
+          <span class="chip chip--md chip--lu" role="listitem" aria-label="Lu — Relativo menor">Lu</span>
+          <span class="chip chip--md chip--za" role="listitem" aria-label="Zá — Tensión">Zá</span>
+        </div>
+
+        <!-- Bullets de promesa -->
+        <ul class="landing__bullets" role="list">
+          <li class="landing__bullet">Sin instrumento ni conocimiento previo</li>
+          <li class="landing__bullet">10 minutos al día — máximo 15</li>
+          <li class="landing__bullet">Tres tipos de ejercicio por tonalidad</li>
+          <li class="landing__bullet">Las 12 tonalidades desde el día 1</li>
+        </ul>
+
+        <button type="button" class="btn btn--primary" id="btn-go-register" aria-label="Comenzar entrenamiento auditivo">
+          ▶ &nbsp; Empezar ahora — es gratis
+        </button>
+
+      </section>
+      <!-- /landing -->
+
+      <!-- ====================================================
+           PANTALLA 2: REGISTRO
+           ==================================================== -->
+      <section class="screen register" id="screen-register" aria-labelledby="register-title">
+
+        <button type="button" class="register__back" id="btn-back-landing" aria-label="Volver a la página de inicio">
+          ← Volver
+        </button>
+
+        <div>
+          <h2 class="register__title" id="register-title">Crea tu cuenta</h2>
+          <p class="register__sub">Gratis. Sin contraseña. Sin tarjeta.</p>
+        </div>
+
+        <!-- Campo nombre -->
+        <div class="field">
+          <label class="field__label" for="input-name">Tu nombre</label>
+          <input
+            class="field__input"
+            type="text"
+            id="input-name"
+            name="nombre"
+            placeholder="¿Cómo te llamas?"
+            autocomplete="given-name"
+            maxlength="50"
+            aria-describedby="name-error"
+          />
+          <span class="field__error" id="name-error" role="alert"></span>
+        </div>
+
+        <!-- Campo email -->
+        <div class="field">
+          <label class="field__label" for="input-email">Tu email</label>
+          <input
+            class="field__input"
+            type="email"
+            id="input-email"
+            name="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+            aria-describedby="email-error"
+          />
+          <span class="field__error" id="email-error" role="alert"></span>
+        </div>
+
+        <!-- Campo password -->
+        <div class="field">
+          <label class="field__label" for="input-password">Contraseña</label>
+          <input
+            class="field__input"
+            type="password"
+            id="input-password"
+            name="password"
+            placeholder="Mínimo 6 caracteres"
+            autocomplete="new-password"
+            maxlength="50"
+            aria-describedby="password-error"
+          />
+          <span class="field__error" id="password-error" role="alert"></span>
+        </div>
+
+        <!-- Campo alias -->
+        <div class="field">
+          <label class="field__label" for="input-alias">Tu alias para el ranking</label>
+          <input
+            class="field__input"
+            type="text"
+            id="input-alias"
+            name="alias"
+            placeholder="Máx. 10 caracteres (ej: JAV)"
+            maxlength="10"
+            aria-describedby="alias-error"
+          />
+          <span class="field__error" id="alias-error" role="alert"></span>
+        </div>
+
+        <button type="button" class="btn btn--primary" id="btn-register" aria-label="Crear cuenta y comenzar">
+          Comenzar mi entrenamiento
+        </button>
+
+        <p class="register__privacy">
+          Guardamos tu nombre y email solo para registrar tu progreso.
+          Nunca los compartimos con terceros.
+        </p>
+
+      </section>
+      <!-- /register -->
+
+      <!-- ====================================================
+           PANTALLA 3: DASHBOARD
+           ==================================================== -->
+      <section class="screen dash" id="screen-dash" aria-labelledby="dash-greeting">
+
+        <!-- Saludo personalizado -->
+        <div>
+          <h2 class="dash__hello" id="dash-greeting">
+            Hola, <span id="dash-name">músico</span>
+          </h2>
+          <p class="dash__date" id="dash-date"></p>
+        </div>
+
+        <!-- Banner de recordatorio (solo si sesión pendiente) -->
+        <div class="reminder" id="reminder" style="display:none" role="alert" aria-live="polite">
+          <span class="reminder__icon" aria-hidden="true">⏰</span>
+          <p class="reminder__text">
+            Tu sesión de hoy está pendiente.<br>
+            <strong>10 minutos son suficientes.</strong> No pierdas tu racha.
+          </p>
+        </div>
+
+        <!-- Progreso de nivel -->
+        <div class="prog-card" role="region" aria-label="Progreso de nivel">
+          <div class="prog-card__lbl">Nivel actual</div>
+          <div class="prog-card__name" id="dash-level-name">Puerta de Entrada</div>
+          <div class="prog-bar" role="progressbar" aria-label="Progreso del nivel" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="prog-bar__fill" id="dash-prog-fill" style="width:0%"></div>
+          </div>
+          <div class="prog-card__frac" id="dash-prog-frac">Nivel 1 / 16</div>
+        </div>
+
+        <!-- Card sesión del día -->
+        <div class="sess-card" role="region" aria-label="Sesión de hoy">
+          <div class="sess-card__hdr">
+            <span class="sess-card__title">Sesión de hoy</span>
+            <span class="badge badge--pending" id="sess-badge">Pendiente</span>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-meta__item">
+              <span class="sess-meta__lbl">Tonalidad</span>
+              <span class="sess-meta__val" id="dash-tonality">████</span>
+            </div>
+            <div class="sess-meta__item">
+              <span class="sess-meta__lbl">Ejercicios</span>
+              <span class="sess-meta__val">~9 en total</span>
+            </div>
+            <div class="sess-meta__item">
+              <span class="sess-meta__lbl">Tiempo</span>
+              <span class="sess-meta__val">10–15 min</span>
+            </div>
+            <div class="sess-meta__item">
+              <span class="sess-meta__lbl">Tipos</span>
+              <span class="sess-meta__val">Mel · Arm · Viaje</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn--primary" id="btn-start-session" aria-label="Comenzar sesión de entrenamiento">
+            ▶ &nbsp; Comenzar sesión
+          </button>
+        </div>
+
+        <!-- Nav secundaria -->
+        <nav class="dash__nav" aria-label="Navegación secundaria">
+          <button type="button" class="dash__nav-btn" id="btn-go-levels" aria-label="Ver todos los niveles">
+            🗺 Niveles
+          </button>
+          <button type="button" class="dash__nav-btn" id="btn-go-profile" aria-label="Ver mi perfil">
+            👤 Mi perfil
+          </button>
+          <button type="button" class="dash__nav-btn" id="btn-go-leaderboard" aria-label="Ver tabla de clasificación">
+            🏆 Tabla
+          </button>
+        </nav>
+
+      </section>
+      <!-- /dashboard -->
+
+      <!-- ====================================================
+           PANTALLA 4: CALENTAMIENTO TONAL
+           ==================================================== -->
+      <section class="screen warmup" id="screen-warmup" aria-labelledby="warmup-title">
+
+        <div class="warmup__hdr">
+          <p class="warmup__phase">Calentamiento</p>
+          <h2 class="warmup__title" id="warmup-title">Escucha la escala de hoy</h2>
+          <p class="warmup__sub" id="warmup-sub">
+            Ascendente y descendente. Siente dónde está el hogar (<strong>Ha</strong>).
+          </p>
+        </div>
+
+        <!-- Visualizador de escala — 7 chips que se iluminan -->
+        <div class="scale-row" role="region" aria-label="Escala diatónica de hoy" aria-live="polite">
+
+          <div class="scale-row__chips" id="scale-chips" aria-hidden="true">
+            <!-- Generados por JS con las 7 sílabas en orden ascendente -->
+            <div class="scale-syl ha" data-syl="ha">
+              <span class="scale-syl__grade">I</span>
+              <span class="scale-syl__letter">Ha</span>
+              <span class="scale-syl__word">Hogar</span>
+            </div>
+            <div class="scale-syl ki" data-syl="ki">
+              <span class="scale-syl__grade">II</span>
+              <span class="scale-syl__letter">Ki</span>
+              <span class="scale-syl__word">Paso</span>
+            </div>
+            <div class="scale-syl da" data-syl="da">
+              <span class="scale-syl__grade">III</span>
+              <span class="scale-syl__letter">Da</span>
+              <span class="scale-syl__word">Luz</span>
+            </div>
+            <div class="scale-syl su" data-syl="su">
+              <span class="scale-syl__grade">IV</span>
+              <span class="scale-syl__letter">Su</span>
+              <span class="scale-syl__word">Aire</span>
+            </div>
+            <div class="scale-syl go" data-syl="go">
+              <span class="scale-syl__grade">V</span>
+              <span class="scale-syl__letter">Go</span>
+              <span class="scale-syl__word">Impulso</span>
+            </div>
+            <div class="scale-syl lu" data-syl="lu">
+              <span class="scale-syl__grade">VI</span>
+              <span class="scale-syl__letter">Lu</span>
+              <span class="scale-syl__word">Sueño</span>
+            </div>
+            <div class="scale-syl za" data-syl="za">
+              <span class="scale-syl__grade">VII</span>
+              <span class="scale-syl__letter">Zá</span>
+              <span class="scale-syl__word">Tensión</span>
+            </div>
+            <div class="scale-syl ha" data-syl="ha">
+              <span class="scale-syl__grade">VIII</span>
+              <span class="scale-syl__letter">Ha</span>
+              <span class="scale-syl__word">Hogar</span>
+            </div>
+          </div>
+
+          <!-- Indicador de dirección -->
+          <div class="scale-dir" aria-hidden="true">
+            <span class="scale-dir__arrow" id="dir-up">↑</span>
+            <span>Ascendente → Descendente</span>
+            <span class="scale-dir__arrow" id="dir-down">↓</span>
+          </div>
+
+        </div>
+
+        <!-- Controles -->
+        <div style="display:flex; flex-direction:column; gap:var(--s3);">
+          <button type="button" class="btn btn--primary" id="btn-play-scale" aria-label="Reproducir escala ascendente y descendente">
+            ▶ &nbsp; Escuchar la escala
+          </button>
+          <button type="button" class="btn btn--secondary" id="btn-warmup-ready" aria-label="Listo para comenzar los ejercicios">
+            ✓ &nbsp; Listo, empezar
+          </button>
+        </div>
+
+      </section>
+      <!-- /warmup -->
+
+      <!-- ====================================================
+           PANTALLA 5: EJERCICIO — contenedor genérico
+           El tipo de ejercicio se inyecta por JS
+           ==================================================== -->
+      <section class="screen" id="screen-exercise" aria-labelledby="ex-title" aria-live="polite">
+
+        <!-- Header del ejercicio -->
+        <div class="ex-hdr">
+          <div class="ex-hdr__left">
+            <span class="ex-hdr__type" id="ex-type-label">Melódico</span>
+            <span class="ex-hdr__num" id="ex-num-label">Ejercicio 1 de 9</span>
+          </div>
+          <!-- Dots de progreso -->
+          <div class="ex-dots" id="ex-dots" aria-label="Progreso de ejercicios" role="list">
+            <!-- Generados por JS -->
+          </div>
+        </div>
+
+        <!-- Escala de Referencia Global en Ejercicios -->
+        <div class="scale-row scale-row--mini" role="region" aria-label="Escala de referencia" style="margin-bottom: var(--s4);">
+          <div class="scale-row__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s2);">
+            <span style="font-size: var(--t-xs); color: var(--subtle); text-transform: uppercase; font-weight: 700;">Referencia Tonal</span>
+            <button type="button" class="btn-mini-scale" id="btn-ex-play-scale" aria-label="Escuchar escala">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Escuchar Escala
+            </button>
+          </div>
+          <div class="scale-row__chips" id="ex-scale-chips">
+            <div class="scale-syl ha" data-syl="ha"><span class="scale-syl__grade">I</span><span class="scale-syl__letter">Ha</span><span class="scale-syl__word">Hogar</span></div>
+            <div class="scale-syl ki" data-syl="ki"><span class="scale-syl__grade">II</span><span class="scale-syl__letter">Ki</span><span class="scale-syl__word">Paso</span></div>
+            <div class="scale-syl da" data-syl="da"><span class="scale-syl__grade">III</span><span class="scale-syl__letter">Da</span><span class="scale-syl__word">Luz</span></div>
+            <div class="scale-syl su" data-syl="su"><span class="scale-syl__grade">IV</span><span class="scale-syl__letter">Su</span><span class="scale-syl__word">Aire</span></div>
+            <div class="scale-syl go" data-syl="go"><span class="scale-syl__grade">V</span><span class="scale-syl__letter">Go</span><span class="scale-syl__word">Impulso</span></div>
+            <div class="scale-syl lu" data-syl="lu"><span class="scale-syl__grade">VI</span><span class="scale-syl__letter">Lu</span><span class="scale-syl__word">Sueño</span></div>
+            <div class="scale-syl za" data-syl="za"><span class="scale-syl__grade">VII</span><span class="scale-syl__letter">Zá</span><span class="scale-syl__word">Tensión</span></div>
+            <div class="scale-syl ha" data-syl="ha"><span class="scale-syl__grade">VIII</span><span class="scale-syl__letter">Ha</span><span class="scale-syl__word">Hogar</span></div>
+          </div>
+        </div>
+
+        <!-- Card de audio — común a todos los tipos -->
+        <div class="audio-card">
+          <button type="button" class="play-circle" id="btn-play-ex" aria-label="Reproducir audio del ejercicio">
+            <!-- SVG play icon -->
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <polygon points="6,3 20,12 6,21" fill="white"/>
+            </svg>
+          </button>
+        <p class="audio-card__inst" id="ex-instruction" aria-live="polite">
+            Escucha y <strong>selecciona</strong> la sílaba que escuchas.
+          </p>
+          <button type="button" class="audio-card__repeat" id="btn-repeat-ex" aria-label="Escuchar de nuevo">
+            ↺ &nbsp; Escuchar de nuevo
+          </button>
+        </div>
+
+        <!-- Zona de respuesta — inyectada por JS según tipo de ejercicio -->
+        <div id="answer-zone" role="group" aria-label="Zona de respuesta">
+          <!-- JS inyecta aquí:
+               - mel-grid    → ejercicio melódico (4 botones 2x2)
+               - harm-grid   → ejercicio armónico (4 botones 2x2)
+               - journey-ex  → ejercicio de viaje (drag & drop)
+          -->
+        </div>
+
+        <!-- Feedback de respuesta — aparece post-respuesta -->
+        <div id="feedback-zone" aria-live="assertive" aria-atomic="true">
+          <!-- JS inyecta .feedback--ok o .feedback--err -->
+        </div>
+
+        <!-- Botón de siguiente ejercicio — aparece post-respuesta -->
+        <button type="button" class="btn btn--primary" id="btn-next-ex" style="display:none" aria-label="Siguiente ejercicio">
+          → &nbsp; Siguiente
+        </button>
+
+      </section>
+      <!-- /exercise -->
+
+      <!-- ====================================================
+           PANTALLA 6: CIERRE DE SESIÓN
+           ==================================================== -->
+      <section class="screen end-screen" id="screen-end" aria-labelledby="end-title">
+
+        <div class="end-screen__icon" aria-hidden="true" id="end-icon">✦</div>
+
+        <div>
+          <h2 class="end-screen__title" id="end-title">Sesión completada</h2>
+          <p class="end-screen__sub" id="end-sub">Vuelve mañana y continuamos.</p>
+        </div>
+
+        <!-- Estadísticas de la sesión -->
+        <div class="stats-grid" role="list" aria-label="Resumen de sesión">
+          <div class="stat-card" role="listitem">
+            <span class="stat-card__val" id="end-correct">—</span>
+            <span class="stat-card__lbl">Correctas</span>
+          </div>
+          <div class="stat-card" role="listitem">
+            <span class="stat-card__val" id="end-accuracy">—</span>
+            <span class="stat-card__lbl">Precisión</span>
+          </div>
+          <div class="stat-card" role="listitem">
+            <span class="stat-card__val" id="end-streak">—</span>
+            <span class="stat-card__lbl">Racha</span>
+          </div>
+          <div class="stat-card" role="listitem">
+            <span class="stat-card__val" id="end-time">—</span>
+            <span class="stat-card__lbl">Minutos</span>
+          </div>
+        </div>
+
+        <!-- Banner de avance de nivel (aparece si subió de nivel) -->
+        <div id="level-up-banner" style="display:none"
+             role="alert" aria-live="polite"
+             style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--r-xl);padding:var(--s6);width:100%;text-align:center;">
+          <div style="font-size:var(--t-xs);color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:var(--s2);">
+            ¡Nuevo nivel!
+          </div>
+          <div style="font-family:var(--f-display);font-style:italic;font-size:var(--t-xl);color:var(--text);margin-bottom:var(--s3);" id="level-up-name">
+            —
+          </div>
+          <p style="font-size:var(--t-sm);color:var(--muted);margin:0;" id="level-up-why">—</p>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:var(--s3); width:100%;">
+          <button type="button" class="btn btn--primary" id="btn-next-tonality" aria-label="Entrenar siguiente tonalidad">
+            🔄 &nbsp; Siguiente tonalidad
+          </button>
+          <button type="button" class="btn btn--secondary" id="btn-end-home" aria-label="Volver al inicio">
+            🏠 &nbsp; Volver al inicio
+          </button>
+        </div>
+
+      </section>
+      <!-- /end -->
+
+      <!-- ====================================================
+           PANTALLA 7: FASE 0 — DESPERTAR TONAL
+           Preserva la lógica del HTML original
+           ==================================================== -->
+      <section class="screen f0" id="screen-f0" aria-labelledby="f0-title">
+
+        <div class="f0__header">
+          <p class="f0__phase">Fase 0</p>
+          <h2 class="f0__title" id="f0-title">Despertar Tonal</h2>
+          <p class="f0__sub">Conoce las tres identidades fundamentales antes de explorar las 7.</p>
+        </div>
+
+        <!-- Back al dashboard -->
+        <button type="button" class="btn btn--ghost" id="btn-f0-back" style="margin-bottom:var(--s2);" aria-label="Volver al dashboard">
+          ← Volver
+        </button>
+
+        <!-- Tabs -->
+        <div class="f0-tabs" role="tablist" aria-label="Modos de práctica">
+          <button type="button" class="f0-tab active" role="tab" aria-selected="true" aria-controls="tab-explore" id="tab-btn-explore" data-tab="identities">
+            Identidades Tonales
+          </button>
+          <button type="button" class="f0-tab" role="tab" aria-selected="false" aria-controls="tab-listen" id="tab-btn-listen" data-tab="journeys">
+            Viajes
+          </button>
+        </div>
+
+        <!-- Selector Cromático Global para Fase 0 -->
+        <div class="f0-chromatic" id="f0-chromatic-selector" role="group" aria-label="Seleccionar tonalidad de referencia" style="display:none">
+          <!-- Generado por JS: C, C#/Db, D... -->
+        </div>
+
+        <!-- TAB: EXPLORAR -->
+        <div class="f0-panel active" id="tab-identities" role="tabpanel" aria-labelledby="tab-btn-explore">
+
+          <!-- Barra de sensación (reubicada arriba) -->
+          <div class="sensation-bar" id="sensation-bar" aria-live="polite" aria-label="Sensación tonal actual" style="margin-bottom: var(--s5);">
+            <div class="sensation-dot" id="sensation-dot"></div>
+            <p class="sensation-text" id="sensation-text">
+              Doble click en una nota del círculo para seleccionar tonalidad. Un click para escuchar.
+            </p>
+          </div>
+
+          <!-- Contenedor del Círculo de Quintas interactivo -->
+          <div id="f0-circle-container" class="circle-container">
+             <!-- SVG del Círculo de Quintas generado por JS -->
+          </div>
+
+          <!-- Visualizador de onda (oculto para simplificar) -->
+          <div class="wave-container" id="wave-container" aria-hidden="true" style="display:none">
+            <!-- JS genera las barras -->
+          </div>
+
+        </div>
+        <!-- /tab explore -->
+
+        <!-- TAB: ESCUCHAR -->
+        <div class="f0-panel" id="tab-journeys" role="tabpanel" aria-labelledby="tab-btn-listen">
+
+          <div class="ex-zone">
+            <h3 class="ex-zone__title">Escucha los viajes</h3>
+            <p class="ex-zone__desc">Selecciona cualquiera de los 16 viajes para sentir su arco emocional en la tonalidad seleccionada.</p>
+
+            <!-- Botones de trayectorias -->
+            <div class="traj-btns traj-btns--f0" id="f0-journeys-grid" role="group" aria-label="Todos los viajes disponibles">
+               <!-- Generado dinámicamente por JS -->
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+      <!-- /f0 -->
+
+      <!-- ====================================================
+           PANTALLA 8: EXPLORADOR DE NIVELES
+           ==================================================== -->
+      <section class="screen profile-screen" id="screen-levels" aria-labelledby="levels-title">
+
+        <button type="button" class="profile-screen__back" id="btn-levels-back" aria-label="Volver al dashboard">
+          ← Volver
+        </button>
+
+        <h2 id="levels-title" style="font-family:var(--f-display);font-style:italic;font-size:var(--t-2xl);">
+          Tu mapa de viajes
+        </h2>
+
+        <!-- Grid de 16 niveles — generado por JS -->
+        <div id="levels-grid"
+             style="display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);"
+             role="list" aria-label="Todos los niveles">
+          <!-- JS inyecta las tarjetas de nivel -->
+        </div>
+
+      </section>
+      <!-- /levels -->
+
+      <!-- ====================================================
+           PANTALLA 9: PERFIL DE USUARIO
+           ==================================================== -->
+      <section class="screen profile-screen" id="screen-profile" aria-labelledby="profile-title">
+
+        <button type="button" class="profile-screen__back" id="btn-profile-back" aria-label="Volver al dashboard">
+          ← Volver
+        </button>
+
+        <div class="profile-card">
+          <div>
+            <div class="profile-card__name" id="prof-name">—</div>
+            <div class="profile-card__since" id="prof-since">En Tonaris desde: —</div>
+          </div>
+
+          <div class="prof-stats" role="list" aria-label="Estadísticas personales">
+            <div class="prof-stat" role="listitem">
+              <span class="prof-stat__val" id="prof-level">1</span>
+              <span class="prof-stat__lbl">Nivel</span>
+            </div>
+            <div class="prof-stat" role="listitem">
+              <span class="prof-stat__val" id="prof-streak">0</span>
+              <span class="prof-stat__lbl">Racha</span>
+            </div>
+            <div class="prof-stat" role="listitem">
+              <span class="prof-stat__val" id="prof-sessions">0</span>
+              <span class="prof-stat__lbl">Sesiones</span>
+            </div>
+          </div>
+
+          <!-- Historial de sesiones -->
+          <div class="sess-list">
+            <div class="sess-list__lbl">Historial</div>
+            <div id="sess-history">
+              <p style="font-size:var(--t-sm);color:var(--subtle);font-style:italic;">
+                Aún no hay sesiones completadas.
+              </p>
+            </div>
+          </div>
+
+          <!-- Botón de cerrar sesión -->
+          <button type="button" class="btn btn--ghost" id="btn-logout" aria-label="Cerrar sesión y borrar progreso local">
+            Cerrar sesión
+          </button>
+
+        </div>
+
+      </section>
+      <!-- /profile -->
+
+      <!-- ====================================================
+           PANTALLA 10: TABLA DE CLASIFICACIÓN (LEADERBOARD)
+           ==================================================== -->
+      <section class="screen profile-screen" id="screen-leaderboard" aria-labelledby="leaderboard-title">
+        <button type="button" class="profile-screen__back" id="btn-leaderboard-back" aria-label="Volver al dashboard">
+          ← Volver
+        </button>
+        <h2 id="leaderboard-title" style="font-family:var(--f-display);font-style:italic;font-size:var(--t-2xl);margin-bottom:var(--s4);">
+          🏆 Clasificación Global
+        </h2>
+        <div class="leaderboard-container" style="max-height: 70vh; overflow-y: auto;">
+          <table class="leaderboard-table" style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.1); font-size:var(--t-sm); color:var(--subtle);">
+                <th style="padding:var(--s2) var(--s3);">Posición</th>
+                <th style="padding:var(--s2) var(--s3);">Nombre</th>
+                <th style="padding:var(--s2) var(--s3); text-align:right;">Puntaje</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+    <!-- /main -->
+
+  </div>
+  <!-- /app-wrap -->
+
+  <!-- Toast de notificación -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="api.js"></script>
+  <!-- main.js al final del body — sin defer necesario -->
+  <script src="main.js"></script>
+
+</body>
+</html>
