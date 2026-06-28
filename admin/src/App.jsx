@@ -5,6 +5,7 @@ import Users from './pages/Users';
 import Sessions from './pages/Sessions';
 import Progress from './pages/Progress';
 import Analytics from './pages/Analytics';
+import Leaderboard from './pages/Leaderboard';
 
 function Nav() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ function Nav() {
         <Link to="/sessions" style={styles.link}>Sesiones</Link>
         <Link to="/progress" style={styles.link}>Progreso</Link>
         <Link to="/analytics" style={styles.link}>Analítica</Link>
+        <Link to="/leaderboard" style={styles.link}>Leaderboard</Link>
       </div>
       <div style={styles.user}>
         <span style={styles.userName}>{user.name}</span>
@@ -48,6 +50,7 @@ export default function App() {
                   <Route path="/sessions" element={<Sessions />} />
                   <Route path="/progress" element={<Progress />} />
                   <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/leaderboard" element={<Leaderboard />} />
                 </Routes>
               </main>
             </PrivateRoute>
