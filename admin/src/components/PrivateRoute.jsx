@@ -1,7 +1,6 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import Nav from './Nav';
+import { Navigate } from 'react-router-dom';
 
-export default function PrivateRoute() {
+export default function PrivateRoute({ children }) {
   const token = localStorage.getItem('tonaris_token');
 
   if (!token) return <Navigate to="/login" replace />;
@@ -19,16 +18,5 @@ export default function PrivateRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <>
-      <Nav />
-      <main style={styles.main}>
-        <Outlet />
-      </main>
-    </>
-  );
+  return children;
 }
-
-const styles = {
-  main: { padding: '0' },
-};
