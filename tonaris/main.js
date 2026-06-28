@@ -1596,6 +1596,20 @@ function endSession() {
     streak: prog.streak.current
   }).catch(() => { });
 
+  // Guardar sesión en PostgreSQL
+  const apiUser = apiGetCurrentUser();
+  if (apiUser) {
+    apiSaveSession({
+      session_id: String(Date.now()),
+      user_id: apiUser.user_id,
+      tonality: getTonalityOfDay().symbol,
+      correct,
+      total,
+      duration: Math.round(duration),
+      accuracy
+    }).catch(() => {});
+  }
+
   // Actualizar pantalla de cierre
   DOM.endCorrect.textContent = `${correct}/${total}`;
   DOM.endAccuracy.textContent = accuracy + '%';
