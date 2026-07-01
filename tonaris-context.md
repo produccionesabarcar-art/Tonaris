@@ -1,17 +1,16 @@
 # Tonaris — Documento de Contexto para Agentes Autónomos
-> Este documento es el contexto completo del proyecto Tonaris para ser leído por agentes como Cline u OpenCode.
-> Contiene el estado actual, la arquitectura acordada, las convenciones de código y el plan detallado de lo que falta.
 > Leer este documento completo antes de ejecutar cualquier acción.
+> Contexto actualizado al 29/06/2026.
 
 ---
 
 ## 1. IDENTIDAD DEL PROYECTO
 
-**Nombre:** AbarcarTonaris
-**Descripción:** Plataforma web de entrenamiento auditivo basada en el círculo de quintas y el sistema pedagógico PAIEM de Abarcar Audio.
-**Propietario:** Javier — fundador de Abarcar Audio, Bogotá, Colombia.
-**Repositorio:** `https://github.com/produccionesabarcar-art/Tonaris.git`
-**Rama activa:** `main`
+**Nombre:** AbarcarTonaris  
+**Descripción:** Plataforma web de entrenamiento auditivo basada en el círculo de quintas y el sistema pedagógico PAIEM de Abarcar Audio.  
+**Propietario:** Javier — fundador de Abarcar Audio, Bogotá, Colombia.  
+**Repositorio:** `https://github.com/produccionesabarcar-art/Tonaris.git`  
+**Rama activa:** `main`  
 **Ruta local:** `E:\TonarisBackend\`
 
 ---
@@ -20,24 +19,23 @@
 
 | Capa | Tecnología | Versión | Estado |
 |---|---|---|---|
-| Runtime | Node.js | v24.16.0 | ✅ instalado |
-| Framework backend | Express | latest | ✅ instalado |
-| Base de datos | PostgreSQL | v18 | ✅ instalado y conectado |
-| ORM | Prisma | — | ⏳ pendiente (post Etapa 5) |
-| Auth | bcrypt + jsonwebtoken | latest | ✅ instalado |
+| Runtime | Node.js | v24.16.0 | ✅ |
+| Framework backend | Express | latest | ✅ |
+| Base de datos | PostgreSQL | v18 | ✅ |
+| ORM | Prisma | — | ⏳ post Etapa 5 |
+| Auth | bcrypt + jsonwebtoken | latest | ✅ |
 | Frontend admin | React + Vite | Vite v8 | ✅ en `admin/` |
 | Frontend app | Vanilla JS | — | ✅ en `tonaris/` |
 | Despliegue | Docker + GitHub Actions | — | ⏳ Etapa 6 |
-| TypeScript | — | — | ⏳ después de Etapa 6 |
 | Cliente HTTP dev | Thunder Client | — | ✅ en VS Code |
 
 **NOTAS CRÍTICAS DE ENTORNO:**
-- `localhost` NO resuelve correctamente en este equipo para Node.js
-- Usar siempre `127.0.0.1:3000` para llamadas directas a la API
-- `localhost:5173` SÍ funciona para Vite
-- `localhost:5500` es el puerto de Go Live (VS Code) para el frontend Tonaris
-- Para levantar PostgreSQL en PowerShell si psql no responde: `$env:PATH += ";C:\Program Files\PostgreSQL\18\bin"`
-- Siempre se necesitan **DOS terminales** abiertas: una para el backend, una para el admin React
+- `localhost` NO resuelve para Node.js en este equipo — usar `127.0.0.1:3000`
+- `localhost:5173` SÍ funciona para Vite (panel admin)
+- `127.0.0.1:5500` o `localhost:5500` para Go Live (app Tonaris)
+- Siempre necesitas **DOS terminales**: una para backend, una para admin React
+- Si psql no responde: `$env:PATH += ";C:\Program Files\PostgreSQL\18\bin"`
+- Para reiniciar nodemon escribir `rs` en la terminal donde corre
 
 ---
 
@@ -52,23 +50,22 @@ E:\TonarisBackend\
 │   │   ├── api/
 │   │   │   └── client.js              ← fetch centralizado con token automático
 │   │   ├── components/
-│   │   │   └── PrivateRoute.jsx       ← redirige a /login si no hay token (usa children)
+│   │   │   └── PrivateRoute.jsx       ← usa children (NO Outlet)
 │   │   ├── pages/
-│   │   │   ├── Login.jsx              ← solo admins pueden entrar
-│   │   │   ├── Users.jsx              ← tabla de todos los usuarios
-│   │   │   ├── Sessions.jsx           ← búsqueda de sesiones por userId
-│   │   │   ├── Progress.jsx           ← métricas de progreso por userId
-│   │   │   ├── Analytics.jsx          ← racha, gráfica recharts, tabla de intervalos
-│   │   │   └── Leaderboard.jsx        ← ranking por alias y precisión promedio
+│   │   │   ├── Login.jsx              ← solo admins
+│   │   │   ├── Users.jsx              ← tabla de usuarios
+│   │   │   ├── Sessions.jsx           ← búsqueda por userId
+│   │   │   ├── Progress.jsx           ← métricas por userId
+│   │   │   ├── Analytics.jsx          ← racha + gráfica recharts + intervalos
+│   │   │   └── Leaderboard.jsx        ← ranking por alias y precisión
 │   │   ├── App.jsx                    ← BrowserRouter, Nav, Routes
 │   │   └── main.jsx
 │   └── vite.config.js                 ← proxy /api → http://127.0.0.1:3000
-├── tonaris/                            ← App Vanilla JS (frontend de entrenamiento)
-│   ├── index.html                     ← SPA con 10 pantallas
-│   ├── main.js                        ← 2763 líneas — motor completo
-│   ├── api.js                         ← cliente HTTP hacia la API (nuevo)
-│   ├── styles.css
-│   └── Logo.svg / LogoSoloAbarcar.svg / LogoSoloTriangulo.svg
+├── tonaris/                            ← App Vanilla JS
+│   ├── index.html                     ← SPA con 10+ pantallas
+│   ├── main.js                        ← ~2770 líneas — motor completo
+│   ├── api.js                         ← cliente HTTP hacia la API
+│   └── styles.css
 ├── src/
 │   ├── routes/
 │   │   ├── users.js                   ← register, login, getAll, getById, updateAlias
@@ -76,16 +73,16 @@ E:\TonarisBackend\
 │   │   ├── progress.js                ← getUserProgress
 │   │   └── analytics.js              ← streak, history, intervals, summary, leaderboard
 │   ├── controllers/
-│   │   ├── users.js                   ← lógica de usuarios + auth + alias
-│   │   ├── sessions.js                ← lógica de sesiones
-│   │   ├── progress.js                ← lógica de progreso
-│   │   └── analytics.js              ← lógica de analítica
+│   │   ├── users.js
+│   │   ├── sessions.js
+│   │   ├── progress.js
+│   │   └── analytics.js
 │   ├── middleware/
-│   │   ├── cors.js                    ← CORS global
-│   │   ├── errorHandler.js            ← manejo global de errores
+│   │   ├── cors.js
+│   │   ├── errorHandler.js
 │   │   └── auth.js                    ← authenticate + authorizeAdmin
 │   ├── db/
-│   │   ├── pool.js                    ← pool de conexiones PostgreSQL (pg)
+│   │   ├── pool.js                    ← exporta pool directamente (sin destructuring)
 │   │   └── migrations/
 │   │       ├── 001_create_users.sql
 │   │       ├── 002_create_sessions.sql
@@ -94,9 +91,9 @@ E:\TonarisBackend\
 │   │       ├── 005_add_role_to_users.sql
 │   │       ├── 006_create_exercise_results.sql
 │   │       ├── 007_add_alias_to_users.sql
-│   │       └── migrationRunner.js     ← ejecuta migraciones en orden, registra en tabla migrations
-│   └── app.js                         ← entrada principal
-├── tonaris-context.md                 ← este documento
+│   │       └── migrationRunner.js
+│   └── app.js
+├── tonaris-context.md
 ├── .env
 ├── .gitignore
 ├── package.json
@@ -117,21 +114,19 @@ JWT_SECRET=tonaris_secret_super_seguro_2024
 
 ### 3.3 Base de datos — tonaris_db
 
-**Tabla users:**
 ```sql
+-- Tabla users
 CREATE TABLE users (
-  user_id   VARCHAR(20)  PRIMARY KEY,
-  name      VARCHAR(100) NOT NULL,
-  email     VARCHAR(150) UNIQUE NOT NULL,
-  password  VARCHAR(255) NOT NULL,
-  role      VARCHAR(20)  NOT NULL DEFAULT 'estudiante',
-  alias     VARCHAR(10),
-  created_at TIMESTAMP   DEFAULT NOW()
+  user_id    VARCHAR(20)  PRIMARY KEY,
+  name       VARCHAR(100) NOT NULL,
+  email      VARCHAR(150) UNIQUE NOT NULL,
+  password   VARCHAR(255) NOT NULL,
+  role       VARCHAR(20)  NOT NULL DEFAULT 'estudiante',
+  alias      VARCHAR(10),
+  created_at TIMESTAMP    DEFAULT NOW()
 );
-```
 
-**Tabla sessions:**
-```sql
+-- Tabla sessions
 CREATE TABLE sessions (
   session_id VARCHAR(20) PRIMARY KEY,
   user_id    VARCHAR(20) REFERENCES users(user_id),
@@ -142,10 +137,8 @@ CREATE TABLE sessions (
   accuracy   INT         NOT NULL,
   created_at TIMESTAMP   DEFAULT NOW()
 );
-```
 
-**Tabla exercise_results:**
-```sql
+-- Tabla exercise_results
 CREATE TABLE exercise_results (
   result_id   VARCHAR(30)  PRIMARY KEY,
   session_id  VARCHAR(20)  REFERENCES sessions(session_id),
@@ -155,14 +148,12 @@ CREATE TABLE exercise_results (
   response_ms INT,
   created_at  TIMESTAMP    DEFAULT NOW()
 );
-```
 
-**Tabla migrations (control interno):**
-```sql
+-- Tabla migrations (control interno)
 CREATE TABLE migrations (
-  id         SERIAL      PRIMARY KEY,
-  filename   VARCHAR(255) UNIQUE NOT NULL,
-  executed_at TIMESTAMP  DEFAULT NOW()
+  id          SERIAL       PRIMARY KEY,
+  filename    VARCHAR(255) UNIQUE NOT NULL,
+  executed_at TIMESTAMP    DEFAULT NOW()
 );
 ```
 
@@ -172,54 +163,54 @@ CREATE TABLE migrations (
 |--------|------|------|-------------|
 | GET | `/health` | ❌ | Health check |
 | POST | `/api/users/register` | ❌ | Registra usuario con bcrypt |
-| POST | `/api/users/login` | ❌ | Login, devuelve JWT (7d) |
+| POST | `/api/users/login` | ❌ | Login, devuelve JWT 7d |
 | GET | `/api/users/all` | ✅ admin | Lista todos los usuarios |
-| GET | `/api/users/:userId` | ✅ | Obtiene usuario por ID |
-| PATCH | `/api/users/:userId/alias` | ✅ | Actualiza alias del usuario |
-| POST | `/api/sessions` | ✅ | Guarda resultado de una sesión |
+| GET | `/api/users/:userId` | ✅ | Usuario por ID |
+| PATCH | `/api/users/:userId/alias` | ✅ | Actualiza alias |
+| POST | `/api/sessions` | ✅ | Guarda sesión |
 | GET | `/api/sessions/:userId` | ✅ | Sesiones de un usuario |
-| GET | `/api/progress/:userId` | ✅ | Progreso agregado de un usuario |
-| GET | `/api/analytics/streak/:userId` | ✅ | Racha actual de días consecutivos |
-| GET | `/api/analytics/history/:userId` | ✅ | Historial de precisión por sesión |
-| GET | `/api/analytics/intervals/:userId` | ✅ | Precisión por intervalo musical |
-| GET | `/api/analytics/summary/:userId` | ✅ | Resumen completo del estudiante |
-| GET | `/api/analytics/leaderboard` | ✅ admin | Top usuarios por precisión |
+| GET | `/api/progress/:userId` | ✅ | Progreso agregado |
+| GET | `/api/analytics/streak/:userId` | ✅ | Racha de días consecutivos |
+| GET | `/api/analytics/history/:userId` | ✅ | Historial por sesión |
+| GET | `/api/analytics/intervals/:userId` | ✅ | Precisión por intervalo |
+| GET | `/api/analytics/summary/:userId` | ✅ | Resumen del estudiante |
+| GET | `/api/analytics/leaderboard` | ❌ | Ranking público (sin auth) |
 
-**Autenticación:** JWT en header `Authorization: Bearer <token>`
-**Roles:** `estudiante` (default) / `admin`
+### 3.5 api.js — funciones disponibles en Tonaris
 
-### 3.5 Frontend Tonaris (Vanilla JS)
+```javascript
+apiLogin(email, password)
+apiRegister(userId, name, email, password, alias)
+apiSaveSession(session)
+apiGetLeaderboard()
+apiGetSummary(userId)
+apiSetAlias(userId, alias)
+apiLogout()
+apiGetCurrentUser()  // lee tonaris_api_user de localStorage
+```
 
-**Pantallas en index.html:**
+### 3.6 Estado de integración en main.js
+
+| Función | Estado |
+|---------|--------|
+| `handleRegister` | ✅ llama apiRegister + apiLogin |
+| `renderLeaderboard` | ✅ llama apiGetLeaderboard (pública, sin auth) |
+| `renderDashboard` | ✅ llama apiGetSummary si hay usuario logueado |
+| Al terminar sesión | ✅ llama apiSaveSession después de sendToSheets |
+
+### 3.7 Pantallas en index.html
+
 - `screen-splash` — inicio
-- `screen-register` — registro (nombre, email, password, alias) ← conectado a API
+- `screen-register` — registro (nombre, email, password, alias) ✅ conectado
 - `screen-tonic` — selección de tónica
 - `screen-key` — selección de tonalidad
 - `screen-mode` — selección de modo
 - `screen-ready` — preparación
-- `screen-session` — ejercicios
-- `screen-result` — resultados
-- `screen-dash` — dashboard principal
+- `screen-session` — ejercicios activos
+- `screen-result` — resultados de sesión
+- `screen-dash` — dashboard ✅ conectado
 - `screen-profile` — perfil
-- `screen-leaderboard` — leaderboard ← pendiente conectar a API
-
-**api.js — funciones disponibles:**
-```javascript
-apiLogin(email, password)         // POST /api/users/login
-apiRegister(userId, name, email, password, alias)  // POST /api/users/register
-apiSaveSession(session)           // POST /api/sessions
-apiGetLeaderboard()               // GET /api/analytics/leaderboard
-apiGetSummary(userId)             // GET /api/analytics/summary/:userId
-apiSetAlias(userId, alias)        // PATCH /api/users/:userId/alias
-apiLogout()                       // limpia localStorage
-apiGetCurrentUser()               // lee tonaris_api_user de localStorage
-```
-
-**Estado de integración API en main.js:**
-- ✅ `handleRegister` llama `apiRegister` + `apiLogin` tras registro
-- ⏳ `screen-leaderboard` — pendiente conectar a `apiGetLeaderboard`
-- ⏳ `screen-dash` — pendiente conectar a `apiGetSummary`
-- ⏳ Al terminar sesión — pendiente llamar `apiSaveSession`
+- `screen-leaderboard` — ranking ✅ conectado
 
 ---
 
@@ -227,55 +218,98 @@ apiGetCurrentUser()               // lee tonaris_api_user de localStorage
 
 | Etapa | Nombre | Estado |
 |-------|--------|--------|
-| 1 | API base (Express, rutas, middlewares) | ✅ COMPLETADA |
+| 1 | API base | ✅ COMPLETADA |
 | 2 | Persistencia (PostgreSQL, migraciones) | ✅ COMPLETADA |
-| 3 | Auth (bcrypt, JWT, roles, rutas protegidas) | ✅ COMPLETADA |
-| 4 | Administración (panel React, vistas CRUD) | ✅ COMPLETADA |
-| 5 | Analítica (dashboards, métricas, integración Tonaris) | 🔄 EN PROGRESO |
-| 6 | Producción (Docker, CI/CD, despliegue) | ⏳ PENDIENTE |
+| 3 | Auth (bcrypt, JWT, roles) | ✅ COMPLETADA |
+| 4 | Administración (panel React) | ✅ COMPLETADA |
+| 5 | Analítica + integración Tonaris | 🔄 EN PROGRESO |
+| 6 | Producción (Docker, CI/CD) | ⏳ PENDIENTE |
 
 ---
 
-## 5. PLAN DETALLADO — LO QUE FALTA EN ETAPA 5
+## 5. MEJORAS PENDIENTES — ETAPA 5 (PRÓXIMA SESIÓN)
 
-### 5.1 Conectar screen-leaderboard de Tonaris a la API
+Estas 4 mejoras son el trabajo inmediato. Todas van en `tonaris/main.js` y `tonaris/styles.css`.
 
-En `tonaris/main.js` buscar la función que renderiza `screen-leaderboard` y reemplazar la lectura de `localStorage.getItem('tonaris_leaderboard')` por una llamada a `apiGetLeaderboard()`.
-
-El leaderboard de la API devuelve:
-```json
-[{ "user_id": "...", "name": "...", "alias": "JAV", "total_sessions": "1", "avg_accuracy": "80" }]
-```
-
-Mostrar `alias || name` en el ranking estilo arcade.
-
-### 5.2 Conectar screen-dash a la API
-
-En `tonaris/main.js` buscar la función `renderDashboard` y agregar una llamada a `apiGetSummary(userId)` para mostrar métricas reales del backend además del progreso local.
-
-### 5.3 Guardar sesiones en PostgreSQL al terminar ejercicio
-
-En `tonaris/main.js` buscar dónde se llama `sendToSheets` al terminar una sesión (alrededor de líneas 1341-1342 y 1562-1563) y agregar en paralelo una llamada a `apiSaveSession`:
-
-```javascript
-await apiSaveSession({
-  session_id: String(Date.now()),
-  user_id: State.progress.userId,
-  tonality: State.session.tonality,
-  correct: State.session.correct,
-  total: State.session.total,
-  duration: Math.round(State.session.duration),
-  accuracy: Math.round((State.session.correct / State.session.total) * 100)
-}).catch(() => {});
-```
+**REGLA CRÍTICA:** main.js tiene ~2770 líneas y es nivel 3 de riesgo.
+Antes de modificar cualquier función: mostrar líneas exactas y esperar confirmación.
 
 ---
 
-## 6. PLAN DETALLADO — ETAPA 6: PRODUCCIÓN
+### 5.1 Quitar tiempo mínimo de sesión + máximo de 5 minutos
+
+**Problema actual:**
+- La función `updateStreak` (línea ~598) requiere 10 minutos acumulados para contar la racha (`if (dailyMins >= 10)`)
+- No hay límite máximo de sesión
+
+**Qué cambiar:**
+1. En `updateStreak`, eliminar la condición `dailyMins >= 10` — cualquier sesión completada cuenta
+2. Agregar un timer de 5 minutos (300 segundos) en la función que inicia la sesión
+3. Cuando el timer llega a 0, cerrar la sesión automáticamente y guardar el puntaje parcial
+4. El puntaje es proporcional: más tiempo = más ejercicios completados = más puntos
+
+**Funciones a buscar:**
+- `updateStreak` (~línea 598) — quitar condición de 10 minutos
+- Función que inicia sesión / muestra `screen-session` — agregar timer de 5 min
+- Timer visual ya existe en el HTML (`<div class="timer-bar">`) — conectarlo
+
+---
+
+### 5.2 Quitar mensaje post-sesión "vuelve en 1 hora"
+
+**Problema actual:**
+- Después de completar una sesión aparece un mensaje recomendando esperar antes de volver a entrenar
+- Esto desincentiva la competencia y el re-entrenamiento
+
+**Qué cambiar:**
+- Buscar en main.js: "hora", "cooldown", "espera", "vuelve", "recomend" cerca del final de sesión o en `renderDashboard`
+- Eliminar o comentar ese bloque
+- Reemplazar por mensaje motivacional hacia el leaderboard
+
+---
+
+### 5.3 Auto-avance en respuesta correcta / botón siguiente en incorrecta
+
+**Problema actual:**
+- Actualmente siempre aparece un botón para avanzar al siguiente ejercicio
+
+**Comportamiento deseado:**
+- ✅ Respuesta correcta → avanzar automáticamente después de ~800ms (dar tiempo para feedback visual)
+- ❌ Respuesta incorrecta → mostrar botón "Siguiente" para que el estudiante pueda ver por qué falló
+
+**Funciones a buscar:**
+- `handleMelodicAnswer` — maneja respuestas de ejercicios melódicos
+- `handleHarmonicAnswer` — maneja respuestas de ejercicios armónicos
+- `handleJourneyAnswer` — maneja respuestas de viajes armónicos
+- Buscar dónde se llama `nextExercise` o se muestra el botón siguiente
+- En respuesta correcta: agregar `setTimeout(() => nextExercise(), 800)`
+- En respuesta incorrecta: mostrar botón y esperar click
+
+---
+
+### 5.4 Responsive — todo en una pantalla sin scroll en móvil
+
+**Problema actual:**
+- En pantallas pequeñas las opciones de respuesta se salen de la pantalla
+- El usuario tiene que hacer scroll para ver todas las opciones
+- Esto rompe la experiencia de entrenamiento auditivo
+
+**Qué cambiar en styles.css:**
+- Agregar/mejorar media queries para pantallas < 400px y < 600px
+- En `screen-session`: usar `max-height: 100dvh` y `overflow: hidden`
+- Reducir `font-size`, `padding` y `gap` en móvil
+- Las opciones de respuesta deben caber en pantalla sin scroll
+- Usar `flex-wrap` o reducir tamaño de botones de opciones en móvil
+
+**Archivos afectados:**
+- `tonaris/styles.css` — agregar media queries
+- `tonaris/index.html` — posiblemente ajustar clases
+
+---
+
+## 6. PLAN ETAPA 6 — PRODUCCIÓN
 
 ### 6.1 Dockerización
-
-Crear `Dockerfile` en `E:\TonarisBackend\`:
 
 ```dockerfile
 FROM node:24-alpine
@@ -287,49 +321,22 @@ EXPOSE 3000
 CMD ["node", "src/app.js"]
 ```
 
-Crear `docker-compose.yml`:
-
-```yaml
-version: '3.8'
-services:
-  api:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - db
-  db:
-    image: postgres:18
-    environment:
-      POSTGRES_DB: tonaris_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-volumes:
-  postgres_data:
-```
-
-### 6.2 CI/CD con GitHub Actions
-
-Crear `.github/workflows/deploy.yml` con trigger en push a `main`.
+### 6.2 CI/CD — GitHub Actions
+Trigger en push a `main`. Steps: install, test, build, deploy.
 
 ### 6.3 Logs estructurados
-
-Instalar `pino`: `npm install pino pino-pretty`
-Reemplazar todos los `console.log` / `console.error` con logs estructurados.
+```bash
+npm install pino pino-pretty
+```
+Reemplazar todos los `console.log/error` con logs JSON.
 
 ### 6.4 Despliegue
-
-- **API:** Railway (Node + PostgreSQL, deploy desde GitHub)
+- **API:** Railway (Node + PostgreSQL desde GitHub)
 - **Panel admin:** Netlify o Vercel (build de `admin/`)
-- **App Tonaris:** ya existe en `abarcaraudio.netlify.app`
-- Variables de entorno en dashboard de Railway — nunca en el repo
+- **App Tonaris:** ya en `abarcaraudio.netlify.app`
+- Variables de entorno en dashboard de Railway — nunca en repo
 
 ### 6.5 Dominio
-
 - API: `api.abarcaraudio.com`
 - Panel admin: `admin.abarcaraudio.com`
 
@@ -337,10 +344,10 @@ Reemplazar todos los `console.log` / `console.error` con logs estructurados.
 
 ## 7. DEUDA TÉCNICA
 
-| Item | Prioridad | Cuándo resolver |
-|------|-----------|----------------|
+| Item | Prioridad | Cuándo |
+|------|-----------|--------|
 | JWT_SECRET hardcodeado en .env | Alta | Antes de Etapa 6 |
-| PATH de PostgreSQL no permanente en Windows | Baja | Antes de Etapa 6 |
+| PATH PostgreSQL no permanente en Windows | Baja | Antes de Etapa 6 |
 | Sin tests automatizados | Media | Etapa 6 |
 | Prisma no introducido | Baja | Post Etapa 5 |
 
@@ -348,50 +355,37 @@ Reemplazar todos los `console.log` / `console.error` con logs estructurados.
 
 ## 8. CONVENCIONES DE CÓDIGO
 
-### 8.1 General
-
-- **Sin TypeScript** hasta que la arquitectura esté completamente estable
-- **Sin over-ingeniería:** la solución más simple que funcione
-- **SQL puro** antes de Prisma
-- Archivos siempre **completos** — nunca fragmentos
-
-### 8.2 Backend (Node/Express)
-
+### Backend (Node/Express)
 - `routes/` solo define rutas → `controllers/` contiene toda la lógica
-- Queries SQL con `pool.query()` — importar como `const pool = require('../db/pool')` (sin destructuring)
+- `const pool = require('../db/pool')` — sin destructuring
 - Nunca exponer `password` en respuestas JSON
-- IDs de usuario generados por el frontend: `usr_` + random string
+- IDs de usuario: `usr_` + random string (generado en frontend)
 - IDs de sesión: `String(Date.now())`
 
-### 8.3 Migraciones SQL
-
+### Migraciones SQL
 - Nombre: `NNN_descripcion_snake_case.sql`
-- Siempre usar `IF NOT EXISTS` / `IF EXISTS`
+- Siempre `IF NOT EXISTS` / `IF EXISTS`
 - Una migración = un cambio atómico
-- Nunca modificar una migración ya ejecutada
+- Nunca modificar migración ya ejecutada
 
-### 8.4 Auth
-
-- Token JWT: payload `{ user_id, role }`, expiración 7 días
+### Auth
+- JWT payload: `{ user_id, role }`, expira 7 días
 - Header: `Authorization: Bearer <token>`
-- `authenticate` siempre antes de `authorizeAdmin`
+- Orden: `authenticate` siempre antes de `authorizeAdmin`
 
-### 8.5 Frontend Admin (React)
-
+### Frontend Admin (React)
 - Estilos inline con objetos JS
-- Paleta: fondo `#0f0f0f`, cards `#1a1a1a`, texto `#fff`, secundario `#aaa`, error `#ff4444`
+- Paleta: `#0f0f0f` fondo, `#1a1a1a` cards, `#fff` texto, `#aaa` secundario, `#ff4444` error
 - `apiFetch` de `src/api/client.js` para TODAS las llamadas
-- `PrivateRoute` usa `children` (no Outlet)
+- `PrivateRoute` usa `children` — NO Outlet
 
-### 8.6 Frontend Tonaris (Vanilla JS)
+### Frontend Tonaris (Vanilla JS)
+- **NO modificar** secciones 1-4 de main.js (constantes pedagógicas, audio, SM-2, datos)
+- Todas las llamadas API van a través de `api.js`
+- Integración aditiva — no reemplaza localStorage, lo complementa
+- Si API falla → app sigue funcionando (graceful degradation)
 
-- **NO modificar** las secciones 1-4 de main.js (constantes pedagógicas, audio, SM-2)
-- Todas las llamadas a la API van a través de `api.js`
-- La integración con la API es **aditiva** — no reemplaza el localStorage existente
-- Si la API falla, la app sigue funcionando con localStorage (graceful degradation)
-
-### 8.7 Git — Conventional Commits
-
+### Git
 ```
 feat: nueva funcionalidad
 fix: bug corregido
@@ -402,49 +396,46 @@ docs: documentación
 
 ---
 
-## 9. PROTOCOLO DE TRABAJO PARA EL AGENTE
+## 9. PROTOCOLO PARA AGENTES
 
 ```
-PENSAR → ANALIZAR → PROPONER PLAN → [confirmar si es cambio de alto riesgo] → EJECUTAR → VERIFICAR
+PENSAR → ANALIZAR → PROPONER PLAN → [confirmar si nivel 3] → EJECUTAR → VERIFICAR
 ```
-
-### Reglas obligatorias
-
-1. Leer este documento completo antes de cualquier acción
-2. Nunca escribir código sin un plan claro
-3. Alcance estricto: no tocar lo que no se pidió
-4. Archivos completos: nunca fragmentos
-5. Verificar después de cada cambio
-
-### Niveles de riesgo
 
 | Nivel | Tipo | Protocolo |
 |-------|------|-----------|
 | 1 — Bajo | Nuevo archivo | Ejecutar directo |
 | 2 — Medio | Modificar controlador o ruta | Mostrar plan + ejecutar |
-| 3 — Alto | Refactor, app.js, main.js, pool.js | Explicar impacto → esperar confirmación |
+| 3 — Alto | Refactor, app.js, main.js, pool.js | Mostrar líneas exactas → esperar confirmación |
 
-**ATENCIÓN con main.js de Tonaris:** Es un archivo de 2763 líneas crítico. Cualquier modificación es nivel 3. Siempre mostrar las líneas exactas a modificar antes de ejecutar.
+**⚠️ main.js de Tonaris es SIEMPRE nivel 3.**
+Antes de cualquier modificación: mostrar las líneas exactas con números, el código actual y el código nuevo. Esperar confirmación explícita antes de escribir.
+
+**Reglas:**
+1. Leer tonaris-context.md completo antes de cualquier acción
+2. Archivos siempre completos — nunca fragmentos
+3. Alcance estricto — no tocar lo que no se pidió
+4. Verificar después de cada cambio que el servidor arranca
 
 ---
 
 ## 10. COMANDOS DE REFERENCIA
 
-```bash
-# Levantar backend
+```powershell
+# Backend
 cd E:\TonarisBackend
 npm run dev
 
-# Levantar panel admin
+# Panel admin React
 cd E:\TonarisBackend\admin
 npm run dev
 
-# Frontend Tonaris — abrir con Go Live en VS Code (puerto 5500)
+# App Tonaris — abrir con Go Live en VS Code (puerto 5500)
 
-# Instalar dependencia en backend
+# Instalar en backend
 cd E:\TonarisBackend && npm install <paquete>
 
-# Instalar dependencia en admin
+# Instalar en admin
 cd E:\TonarisBackend\admin && npm install <paquete>
 
 # Git
@@ -452,26 +443,26 @@ git add .
 git commit -m "feat: descripción"
 git push origin main
 
-# PostgreSQL (si psql no responde)
+# PostgreSQL
 $env:PATH += ";C:\Program Files\PostgreSQL\18\bin"
-psql -U postgres
+psql -U postgres -d tonaris_db
 
-# Reiniciar nodemon
-rs  (escribir en la terminal donde corre nodemon)
+# Reiniciar nodemon (escribir en terminal donde corre)
+rs
 ```
 
 ---
 
-## 11. USUARIOS DE PRUEBA EN LA DB
+## 11. USUARIOS EN LA DB
 
-| user_id | email | role | alias |
-|---------|-------|------|-------|
-| user_001 | javier@abarcar.co | admin | — |
-| 1782185263746 | produccionesabarcar@gmail.com | estudiante | JAV |
-
-Admin password: `123456`
+| user_id | email | role | alias | notas |
+|---------|-------|------|-------|-------|
+| user_001 | javier@abarcar.co | admin | — | password: 123456 |
+| 1782185263746 | produccionesabarcar@gmail.com | estudiante | JAV | tiene 1 sesión |
+| usr_6yoo12o7 | javier.e.vargas.t@gmail.com | estudiante | JAVIER | sin sesiones |
+| usr_5u4y4r64 | prueba123@abarcar.co | estudiante | JAVIERV | sin sesiones |
 
 ---
 
-*Documento actualizado al finalizar sesión del 28/06/2026.*
-*Próxima acción: continuar Etapa 5 — conectar screen-leaderboard y screen-dash de Tonaris a la API, y guardar sesiones en PostgreSQL.*
+*Documento actualizado al 29/06/2026.*
+*Próxima acción: implementar las 4 mejoras de la sección 5 en tonaris/main.js y tonaris/styles.css.*

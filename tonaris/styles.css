@@ -621,28 +621,6 @@ input { font-family: inherit; font-size: inherit; }
 .btn--ghost { background: transparent; color: var(--muted); border: 1px solid var(--border-2); }
 .btn--ghost:hover { background: var(--surface); color: var(--text); }
 
-/* Botón de reproducción — grande y circular */
-.play-circle {
-  width: 68px; height: 68px;
-  border-radius: var(--r-full);
-  background: var(--accent);
-  border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; flex-shrink: 0;
-  transition: all var(--tr-fast);
-  box-shadow: 0 4px 20px var(--accent-dim);
-}
-.play-circle:hover  { background: #9C6FFF; transform: scale(1.06); box-shadow: var(--accent-glow); }
-.play-circle:active { background: #6030E8; transform: scale(0.96); }
-.play-circle--playing { animation: play-pulse 1s ease-in-out infinite; }
-
-@keyframes play-pulse {
-  0%,100% { box-shadow: 0 4px 20px var(--accent-dim); }
-  50%      { box-shadow: 0 4px 40px rgba(124,77,255,0.40); }
-}
-
-.play-circle svg { width: 22px; height: 22px; color: #fff; fill: #fff; }
-
 /* Botón de carga */
 .btn--loading { opacity: 0.65; pointer-events: none; }
 
@@ -1191,12 +1169,15 @@ input { font-family: inherit; font-size: inherit; }
 .audio-card__inst { font-size: var(--t-sm); color: var(--muted); text-align: center; margin: 0; line-height: 1.5; }
 .audio-card__inst strong { color: var(--text); }
 .audio-card__repeat {
-  display: flex; align-items: center; gap: var(--s2);
-  font-size: var(--t-xs); color: var(--subtle);
-  padding: var(--s2) var(--s3); border-radius: var(--r-sm);
-  cursor: pointer; transition: color var(--tr-fast), background var(--tr-fast);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 5px 12px;
+  background: #C8473A; color: #fff;
+  border: none; border-radius: 6px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.03em;
+  cursor: pointer; transition: all var(--tr-fast);
 }
-.audio-card__repeat:hover { color: var(--muted); background: var(--surface2); }
+.audio-card__repeat:hover { background: #E05C1A; }
+.audio-card__repeat:active { background: #A8331A; }
 
 /* EJERCICIO MELÓDICO — 4 opciones en grid 2x2 */
 .mel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
@@ -1502,16 +1483,119 @@ input { font-family: inherit; font-size: inherit; }
    SECCIÓN 21: RESPONSIVE
    ============================================================ */
 
-/* Ajustes para móviles muy pequeños */
-@media (max-width: 380px) {
-  .id-grid { gap: var(--s2); }
-  .mel-grid, .harm-grid { grid-template-columns: 1fr 1fr; } /* Forzamos 2 columnas en mini */
+/* La pantalla de ejercicios debe caber sin scroll idealmente */
+#screen-exercise {
+  max-height: 100dvh;
+  overflow-y: auto;
 }
 
-@media (max-width: 500px) {
-  .scale-row__chips {
-    grid-template-columns: repeat(4, 1fr);
+@media (max-width: 600px) {
+  #screen-exercise {
+    padding: var(--s4) var(--s4) var(--s6);
     gap: var(--s2);
+  }
+
+  .scale-row--mini {
+    padding: var(--s2) var(--s3);
+  }
+
+  .scale-row--mini .scale-syl {
+    padding: 4px 0;
+  }
+
+  .audio-card {
+    padding: var(--s4);
+    gap: var(--s3);
+  }
+
+  .syl-btn {
+    min-height: 70px;
+    padding: var(--s3) var(--s2);
+  }
+
+  .syl-btn__letter {
+    font-size: var(--t-lg);
+  }
+
+  .harm-btn {
+    min-height: 80px;
+    padding: var(--s3) var(--s2);
+  }
+
+  .harm-btn__letter {
+    font-size: var(--t-lg);
+  }
+
+  .mel-grid {
+    gap: var(--s2);
+  }
+
+  .feedback {
+    padding: var(--s3) var(--s4);
+  }
+}
+
+@media (max-width: 400px) {
+  #screen-exercise {
+    padding: var(--s3) var(--s3) var(--s4);
+    gap: var(--s1);
+  }
+
+  .ex-hdr__type,
+  .ex-hdr__num {
+    font-size: 10px;
+  }
+
+  .ex-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .scale-row--mini .scale-syl__letter {
+    font-size: var(--t-xs);
+  }
+
+  .scale-row--mini .scale-syl__grade {
+    font-size: 6px;
+  }
+
+  .scale-row--mini .scale-syl__word {
+    display: none;
+  }
+
+  .syl-btn {
+    min-height: 60px;
+    padding: var(--s2) var(--s1);
+  }
+
+  .syl-btn__letter {
+    font-size: var(--t-md);
+  }
+
+  .syl-btn__word {
+    font-size: 10px;
+  }
+
+  .harm-btn {
+    min-height: 68px;
+    padding: var(--s2) var(--s1);
+    gap: 2px;
+  }
+
+  .harm-btn__letter {
+    font-size: var(--t-md);
+  }
+
+  .harm-btn__word {
+    font-size: var(--t-xs);
+  }
+
+  .harm-btn__fn {
+    font-size: 9px;
+  }
+
+  .audio-card__inst {
+    font-size: var(--t-xs);
   }
 }
 

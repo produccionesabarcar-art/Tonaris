@@ -126,10 +126,10 @@ const LEVELS = [
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/REEMPLAZAR_CON_TU_URL/exec';
 
 /** @description Tiempo máximo de sesión en segundos */
-const SESSION_MAX_SECS = 15 * 60;
+const SESSION_MAX_SECS = 5 * 60;
 
 /** @description Tiempo mínimo de sesión en segundos */
-const SESSION_MIN_SECS = 10 * 60;
+const SESSION_MIN_SECS = 0;
 
 /** @description Aciertos consecutivos necesarios para subir de nivel */
 const LEVEL_UP_THRESHOLD = 5;
@@ -603,27 +603,20 @@ function updateStreak(progress) {
   const today = new Date().toDateString();
   const last = progress.streak.lastSessionDate;
 
-  // Sumar minutos acumulados hoy en todas las sesiones completadas
-  const dailyMins = (progress.sessionsSummary || [])
-    .filter(s => new Date(s.date).toDateString() === today)
-    .reduce((acc, s) => acc + (s.duration || 0), 0);
-
-  if (dailyMins >= 10) {
-    if (last !== today) {
-      if (!last) {
+  if (last !== today) {
+    if (!last) {
+      progress.streak.current = 1;
+    } else {
+      const lastDate = new Date(last);
+      const todayDate = new Date(today);
+      const diffDays = Math.round((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) {
+        progress.streak.current += 1;
+      } else if (diffDays > 1) {
         progress.streak.current = 1;
-      } else {
-        const lastDate = new Date(last);
-        const todayDate = new Date(today);
-        const diffDays = Math.round((todayDate - lastDate) / (1000 * 60 * 60 * 24));
-        if (diffDays === 1) {
-          progress.streak.current += 1;
-        } else if (diffDays > 1) {
-          progress.streak.current = 1;
-        }
       }
-      progress.streak.lastSessionDate = today;
     }
+    progress.streak.lastSessionDate = today;
   }
 
   if (progress.streak.current > progress.streak.max) {
@@ -691,6 +684,7 @@ function checkLevelUp(progress) {
  * @param {number} [retries=3]
  */
 async function sendToSheets(data, retries = 3) {
+  if (APPS_SCRIPT_URL.includes('REEMPLAZAR')) return;
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(APPS_SCRIPT_URL, {
@@ -1060,21 +1054,15 @@ function playCurrentExerciseAudio() {
   const ex = State.exercise.audioData;
   if (!ex) return;
 
-  DOM.btnPlayEx.classList.add('play-circle--playing');
-
   if (ex.type === 'melodic') {
     playMelodicNote(ex.freq);
-    setTimeout(() => DOM.btnPlayEx.classList.remove('play-circle--playing'), 1400);
 
   } else if (ex.type === 'harmonic') {
     playHarmonicChord(ex.chordFreqs);
-    setTimeout(() => DOM.btnPlayEx.classList.remove('play-circle--playing'), 2000);
 
   } else if (ex.type === 'journey') {
     // Reproducir el viaje con animación de chips en la drop zone
-    playJourney(ex.answer, ex.ratio).then(() => {
-      DOM.btnPlayEx.classList.remove('play-circle--playing');
-    });
+    playJourney(ex.answer, ex.ratio);
   }
 }
 
@@ -1336,8 +1324,11 @@ function showFeedback(correct, correctSyl, fullAnswer) {
     </div>
   `;
 
-  // Mostrar botón de siguiente
-  DOM.btnNextEx.style.display = '';
+  if (correct) {
+    setTimeout(() => advanceExercise(), 800);
+  } else {
+    DOM.btnNextEx.style.display = '';
+  }
 }
 
 /**
@@ -1424,16 +1415,7 @@ function startSessionTimer(sessionEndTimestamp) {
       State.session.timerID = null;
       clearActiveSession();
       endSession();
-      if (confirm("Te sugerimos dejar descansar el oído y volver en 1 hora.\n\n¿Quieres finalizar la sesión?")) {
-        renderDashboard();
-        showScreen('dash');
-      } else {
-        State.session.active = true;
-        State.session.correct = 0;
-        State.session.total = 0;
-        State.session.sessionId = 'sess_' + Math.random().toString(36).slice(2, 10);
-        startSessionTimer();
-      }
+      showToast('¡Sesión completada! Revisa tu progreso en el ranking.', 4000);
       return;
     }
 
@@ -1444,15 +1426,9 @@ function startSessionTimer(sessionEndTimestamp) {
     const pct = (remaining / SESSION_MAX_SECS) * 100;
     DOM.timerFill.style.width = pct + '%';
 
-    const elapsed = SESSION_MAX_SECS - remaining;
-    const isWarn = remaining <= SESSION_MAX_SECS - SESSION_MIN_SECS;
     const isEnd = remaining <= 60;
-    DOM.timerVal.className = 'timer-bar__val' + (isEnd ? ' end' : isWarn ? ' warn' : '');
-    DOM.timerFill.className = 'timer-fill' + (isEnd ? ' end' : isWarn ? ' warn' : '');
-
-    if (elapsed === SESSION_MIN_SECS) {
-      showToast('✓ Ya completaste tu mínimo. Puedes seguir 5 minutos más.', 4000);
-    }
+    DOM.timerVal.className = 'timer-bar__val' + (isEnd ? ' end' : '');
+    DOM.timerFill.className = 'timer-fill' + (isEnd ? ' end' : '');
   }, 1000);
 }
 
@@ -1601,7 +1577,7 @@ function endSession() {
   if (apiUser) {
     apiSaveSession({
       session_id: String(Date.now()),
-      user_id: apiUser.user_id,
+      userId: apiUser.user_id,
       tonality: getTonalityOfDay().symbol,
       correct,
       total,
@@ -2656,7 +2632,6 @@ function initEventListeners() {
   }
 
   // --- EJERCICIOS ---
-  DOM.btnPlayEx.addEventListener('click', () => playCurrentExerciseAudio());
   DOM.btnRepeatEx.addEventListener('click', () => playCurrentExerciseAudio());
   DOM.btnNextEx.addEventListener('click', () => advanceExercise());
 
@@ -2664,19 +2639,8 @@ function initEventListeners() {
   DOM.btnNextTonality.addEventListener('click', () => startSession());
   const handleExitSession = () => {
     if (State.session.active) {
-      const today = new Date().toDateString();
-      const dailyMins = (State.progress.sessionsSummary || [])
-        .filter(s => new Date(s.date).toDateString() === today)
-        .reduce((acc, s) => acc + (s.duration || 0), 0);
-      const currentElapsedMins = State.session.startTime ? Math.round((Date.now() - State.session.startTime) / 60000) : 0;
-      if (dailyMins + currentElapsedMins < 10) {
-        if (!confirm("No has completado los 10 minutos mínimos de hoy. Puedes perder la racha diaria. Completa los 10 minutos para conservarla.\n\n¿Quieres salir de todos modos?")) {
-          return false;
-        }
-      } else {
-        if (!confirm("¿Seguro que deseas salir de la sesión?")) {
-          return false;
-        }
+      if (!confirm("¿Seguro que deseas salir de la sesión?")) {
+        return false;
       }
       // Conservar progreso, racha y estadísticas correspondientes de la sesión parcial
       endSession();
