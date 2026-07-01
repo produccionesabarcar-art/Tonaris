@@ -1,4 +1,5 @@
 const pool = require('../db/pool');
+const logger = require('../lib/logger');
 
 /**
  * Obtiene el progreso de un usuario.
@@ -37,7 +38,7 @@ async function getUserProgress(req, res) {
       lastSession: data.last_session
     });
   } catch (err) {
-    console.error('[getUserProgress]', err.message);
+    logger.error(err, '[getUserProgress]');
     res.status(500).json({ error: 'Error al obtener progreso.' });
   }
 }

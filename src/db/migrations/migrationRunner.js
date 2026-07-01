@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const pool = require('../pool');
+const logger = require('../../lib/logger');
 
 async function runMigrations() {
   const client = await pool.connect();
@@ -29,7 +30,7 @@ async function runMigrations() {
       );
 
       if (rows.length > 0) {
-        console.log(`⏭️  Ya ejecutada: ${file}`);
+        logger.info(`⏭️  Ya ejecutada: ${file}`);
         continue;
       }
 
@@ -43,12 +44,12 @@ async function runMigrations() {
         [file]
       );
 
-      console.log(`✅ Migración ejecutada: ${file}`);
+      logger.info(`✅ Migración ejecutada: ${file}`);
     }
 
-    console.log('🏁 Migraciones completadas.');
+    logger.info('🏁 Migraciones completadas.');
   } catch (err) {
-    console.error('❌ Error en migraciones:', err.message);
+    logger.error(err, '❌ Error en migraciones');
     throw err;
   } finally {
     client.release();

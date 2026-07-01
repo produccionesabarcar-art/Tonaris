@@ -1,4 +1,5 @@
 const pool = require('../db/pool');
+const logger = require('../lib/logger');
 
 /**
  * Guarda el resultado de una sesión de práctica.
@@ -23,7 +24,7 @@ async function createSession(req, res) {
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('[createSession]', err.message);
+    logger.error(err, '[createSession]');
     res.status(500).json({ error: 'Error al guardar sesión.' });
   }
 }
@@ -43,7 +44,7 @@ async function getSessionsByUser(req, res) {
 
     res.json(result.rows);
   } catch (err) {
-    console.error('[getSessionsByUser]', err.message);
+    logger.error(err, '[getSessionsByUser]');
     res.status(500).json({ error: 'Error al obtener sesiones.' });
   }
 }

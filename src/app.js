@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const express = require('express');
+const logger = require('./lib/logger');
 const cors = require('./middleware/cors');
 const errorHandler = require('./middleware/errorHandler');
 const { runMigrations } = require('./db/migrations/migrationRunner');
@@ -34,15 +35,15 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, async () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  logger.info(`Servidor corriendo en http://localhost:${PORT}`);
   await runMigrations().catch(err => {
-    console.error('Migraciones fallidas:', err.message);
+    logger.error(err, 'Migraciones fallidas');
     process.exit(1);
   });
 });
 
 server.on('error', (err) => {
-  console.error('Error al iniciar servidor:', err.message);
+  logger.error(err, 'Error al iniciar servidor');
 });
 
 module.exports = app;

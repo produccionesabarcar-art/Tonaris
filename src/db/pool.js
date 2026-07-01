@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const logger = require('../lib/logger');
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -9,7 +10,7 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  console.error('[DB] Error inesperado en el pool:', err.message);
+  logger.error(err, '[DB] Error inesperado en el pool');
 });
 
 module.exports = pool;
