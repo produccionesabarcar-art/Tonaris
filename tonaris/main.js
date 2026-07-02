@@ -163,6 +163,7 @@ const DOM = {
   screens: {
     landing: document.getElementById('screen-landing'),
     register: document.getElementById('screen-register'),
+    login: document.getElementById('screen-login'),
     dash: document.getElementById('screen-dash'),
     warmup: document.getElementById('screen-warmup'),
     exercise: document.getElementById('screen-exercise'),
@@ -175,6 +176,7 @@ const DOM = {
 
   // Landing
   btnGoRegister: document.getElementById('btn-go-register'),
+  btnGoLogin: document.getElementById('btn-go-login'),
 
   // Registro
   btnBackLanding: document.getElementById('btn-back-landing'),
@@ -187,6 +189,15 @@ const DOM = {
   nameError: document.getElementById('name-error'),
   emailError: document.getElementById('email-error'),
   btnRegister: document.getElementById('btn-register'),
+
+  // Login
+  btnBackLogin: document.getElementById('btn-back-login'),
+  inputLoginEmail: document.getElementById('input-login-email'),
+  inputLoginPassword: document.getElementById('input-login-password'),
+  loginEmailError: document.getElementById('login-email-error'),
+  loginPasswordError: document.getElementById('login-password-error'),
+  btnLogin: document.getElementById('btn-login'),
+  linkLoginToRegister: document.getElementById('link-login-to-register'),
 
   // Dashboard
   dashName: document.getElementById('dash-name'),
@@ -2561,9 +2572,17 @@ async function handleRegister() {
   });
 
   // Registrar en API Tonaris
-  await apiRegister(userId, name, email, password, alias).catch(() => {
-    // Si falla la API, continuar igual — ya está en localStorage
-  });
+  const registerResult = await apiRegister(userId, name, email, password, alias);
+  if (registerResult?.error) {
+    DOM.btnRegister.classList.remove('btn--loading');
+    DOM.btnRegister.textContent = 'Comenzar mi entrenamiento';
+    if (registerResult.error.includes('registrado')) {
+      DOM.emailError.textContent = 'Este correo ya está registrado. Inicia sesión.';
+      DOM.emailError.classList.add('field__error--show');
+      DOM.inputEmail.classList.add('field__input--err');
+    }
+    return;
+  }
   // Login automático tras registro
   await apiLogin(email, password).catch(() => {});
 
@@ -2578,6 +2597,59 @@ async function handleRegister() {
   showToast(`¡Bienvenido, ${name}!`);
 }
 
+/**
+ * @description Procesa el formulario de inicio de sesión.
+ */
+async function handleLogin() {
+  const email = DOM.inputLoginEmail.value.trim();
+  const password = DOM.inputLoginPassword.value.trim();
+  DOM.loginEmailError.classList.remove('field__error--show');
+  DOM.loginPasswordError.classList.remove('field__error--show');
+  DOM.inputLoginEmail.classList.remove('field__input--err');
+  DOM.inputLoginPassword.classList.remove('field__input--err');
+
+  if (!email) {
+    DOM.loginEmailError.textContent = 'Ingresa tu email.';
+    DOM.loginEmailError.classList.add('field__error--show');
+    DOM.inputLoginEmail.classList.add('field__input--err');
+    return;
+  }
+  if (!password || password.length < 6) {
+    DOM.loginPasswordError.textContent = 'Contraseña incorrecta.';
+    DOM.loginPasswordError.classList.add('field__error--show');
+    DOM.inputLoginPassword.classList.add('field__input--err');
+    return;
+  }
+
+  DOM.btnLogin.classList.add('btn--loading');
+  DOM.btnLogin.textContent = 'Entrando...';
+
+  const result = await apiLogin(email, password);
+
+  DOM.btnLogin.classList.remove('btn--loading');
+  DOM.btnLogin.textContent = 'Entrar';
+
+  if (result?.token) {
+    const savedProgress = loadProgress();
+    if (savedProgress) {
+      State.progress = savedProgress;
+      State.user = { userId: savedProgress.userId, name: savedProgress.name };
+    } else {
+      State.progress = createInitialProgress(result.user?.user_id || '', result.user?.name || '');
+      saveProgress(State.progress);
+      State.user = { userId: result.user.user_id, name: result.user.name };
+    }
+    renderDashboard();
+    showScreen('dash');
+    showToast(`Bienvenido de nuevo, ${State.user.name}!`);
+  } else {
+    const msg = result?.error || 'Error de conexión con el servidor.';
+    DOM.loginEmailError.textContent = msg;
+    DOM.loginEmailError.classList.add('field__error--show');
+    DOM.inputLoginEmail.classList.add('field__input--err');
+  }
+}
+
 /* ============================================================
    SECCIÓN 18: INICIALIZACIÓN Y EVENT LISTENERS
    ============================================================ */
@@ -2590,6 +2662,7 @@ function initEventListeners() {
 
   // --- LANDING ---
   if (DOM.btnGoRegister) DOM.btnGoRegister.addEventListener('click', () => showScreen('register'));
+  if (DOM.btnGoLogin) DOM.btnGoLogin.addEventListener('click', () => showScreen('login'));
 
   // --- REGISTRO ---
   if (DOM.btnBackLanding) DOM.btnBackLanding.addEventListener('click', () => showScreen('landing'));
@@ -2600,6 +2673,23 @@ function initEventListeners() {
     if (input) {
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter') handleRegister();
+      });
+    }
+  });
+
+  // --- LOGIN ---
+  if (DOM.btnBackLogin) DOM.btnBackLogin.addEventListener('click', () => showScreen('landing'));
+  if (DOM.btnLogin) DOM.btnLogin.addEventListener('click', handleLogin);
+  if (DOM.linkLoginToRegister) DOM.linkLoginToRegister.addEventListener('click', e => {
+    e.preventDefault();
+    showScreen('register');
+  });
+
+  // Login con Enter en los inputs
+  [DOM.inputLoginEmail, DOM.inputLoginPassword].forEach(input => {
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleLogin();
       });
     }
   });

@@ -131,6 +131,10 @@
           ▶ &nbsp; Empezar ahora — es gratis
         </button>
 
+        <button type="button" class="btn btn--ghost" id="btn-go-login" style="margin-top:var(--s3);" aria-label="Iniciar sesión">
+          ¿Ya tienes cuenta? Inicia sesión
+        </button>
+
       </section>
       <!-- /landing -->
 
@@ -223,7 +227,66 @@
       <!-- /register -->
 
       <!-- ====================================================
-           PANTALLA 3: DASHBOARD
+           PANTALLA 3: LOGIN
+           ==================================================== -->
+      <section class="screen register" id="screen-login" aria-labelledby="login-title">
+
+        <button type="button" class="register__back" id="btn-back-login" aria-label="Volver a la página de inicio">
+          ← Volver
+        </button>
+
+        <div>
+          <h2 class="register__title" id="login-title">Iniciar sesión</h2>
+          <p class="register__sub">Ingresa tu email y contraseña.</p>
+        </div>
+
+        <!-- Campo email -->
+        <div class="field">
+          <label class="field__label" for="input-login-email">Tu email</label>
+          <input
+            class="field__input"
+            type="email"
+            id="input-login-email"
+            name="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+            aria-describedby="login-email-error"
+          />
+          <span class="field__error" id="login-email-error" role="alert"></span>
+        </div>
+
+        <!-- Campo password -->
+        <div class="field">
+          <label class="field__label" for="input-login-password">Contraseña</label>
+          <input
+            class="field__input"
+            type="password"
+            id="input-login-password"
+            name="password"
+            placeholder="••••••"
+            autocomplete="current-password"
+            maxlength="50"
+            aria-describedby="login-password-error"
+          />
+          <span class="field__error" id="login-password-error" role="alert"></span>
+        </div>
+
+        <button type="button" class="btn btn--primary" id="btn-login" aria-label="Iniciar sesión">
+          Entrar
+        </button>
+
+        <p class="register__privacy" style="text-align:center;">
+          ¿No tienes cuenta?
+          <a href="#" id="link-login-to-register" style="color:var(--accent);text-decoration:underline;">
+            Regístrate gratis
+          </a>
+        </p>
+
+      </section>
+      <!-- /login -->
+
+      <!-- ====================================================
+           PANTALLA 4: DASHBOARD
            ==================================================== -->
       <section class="screen dash" id="screen-dash" aria-labelledby="dash-greeting">
 
