@@ -36,7 +36,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, async () => {
+const server = app.listen(PORT, '0.0.0.0', async () => {
   logger.info(`Servidor corriendo en http://localhost:${PORT}`);
   await runMigrations().catch(err => {
     logger.error(err, 'Migraciones fallidas');

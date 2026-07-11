@@ -12,7 +12,7 @@ function getResend() {
 
 async function sendPasswordResetEmail(email, resetToken) {
   const frontendUrl = process.env.FRONTEND_URL || 'http://127.0.0.1:5500';
-  const resetLink = `${frontendUrl}/tonaris/index.html?screen=reset-password&token=${resetToken}`;
+  const resetLink = `${frontendUrl}/?screen=reset-password&token=${resetToken}`;
 
   try {
     await getResend().emails.send({

@@ -2698,17 +2698,18 @@ async function handleForgotPassword() {
 async function handleResetPassword() {
   const password = DOM.resetPassword.value.trim();
   const confirm = DOM.resetConfirm.value.trim();
-  const messageEl = DOM.resetMessage;
   const token = State.resetToken;
 
-  if (!password || password.length < 8) {
-    messageEl.textContent = 'La contraseña debe tener al menos 8 caracteres.';
-    messageEl.style.color = '#ff4444'; messageEl.style.display = '';
+  if (!password || !confirm) {
+    showToast('Ambos campos son obligatorios', 3000);
+    return;
+  }
+  if (password.length < 8) {
+    showToast('La contraseña debe tener al menos 8 caracteres', 3000);
     return;
   }
   if (password !== confirm) {
-    messageEl.textContent = 'Las contraseñas no coinciden.';
-    messageEl.style.color = '#ff4444'; messageEl.style.display = '';
+    showToast('Las contraseñas no coinciden', 3000);
     return;
   }
 
@@ -2718,18 +2719,19 @@ async function handleResetPassword() {
   const result = await apiResetPassword(token, password);
 
   DOM.btnResetSubmit.classList.remove('btn--loading');
-  DOM.btnResetSubmit.textContent = 'Restablecer';
+  DOM.btnResetSubmit.textContent = 'Restablecer contraseña';
 
   if (result?.error) {
-    messageEl.textContent = result.error;
-    messageEl.style.color = '#ff4444'; messageEl.style.display = '';
+    DOM.resetMessage.textContent = result.error;
+    DOM.resetMessage.style.color = '#ff4444';
+    DOM.resetMessage.style.display = '';
     return;
   }
 
-  messageEl.textContent = '';
-  messageEl.style.display = 'none';
-  showToast('Contraseña actualizada. Ahora puedes iniciar sesión.');
-  showScreen('login');
+  DOM.resetMessage.textContent = '';
+  DOM.resetMessage.style.display = 'none';
+  showToast('Contraseña actualizada correctamente');
+  setTimeout(() => showScreen('login'), 2000);
 }
 
 /* ============================================================
