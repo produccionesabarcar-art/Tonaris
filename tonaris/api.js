@@ -69,9 +69,9 @@ async function apiLogin(email, password) {
   return data;
 }
 
-async function apiRegister(user_id, name, email, password, alias) {
+async function apiRegister(user_id, name, email, password, institution) {
   return await apiPost('/api/users/register', {
-    user_id, name, email, password, alias, role: 'estudiante'
+    user_id, name, email, password, institution, role: 'estudiante'
   });
 }
 

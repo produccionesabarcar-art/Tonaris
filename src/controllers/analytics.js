@@ -96,15 +96,15 @@ async function getLeaderboard(req, res) {
       SELECT
         u.user_id,
         u.name,
-        u.alias,
+        u.institution,
         COUNT(s.session_id) as total_sessions,
         ROUND(AVG(s.accuracy)) as avg_accuracy
       FROM users u
       LEFT JOIN sessions s ON u.user_id = s.user_id
       WHERE u.role = 'estudiante'
-      GROUP BY u.user_id, u.name, u.alias
+      GROUP BY u.user_id, u.name, u.institution
       ORDER BY avg_accuracy DESC
-      LIMIT 10;
+      LIMIT 20;
     `;
     const result = await pool.query(query);
     res.status(200).json(successResponse(result.rows));

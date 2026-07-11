@@ -184,9 +184,8 @@ const DOM = {
   inputName: document.getElementById('input-name'),
   inputEmail: document.getElementById('input-email'),
   inputPassword: document.getElementById('input-password'),
-  inputAlias: document.getElementById('input-alias'),
+  registerInstitution: document.getElementById('register-institution'),
   passwordError: document.getElementById('password-error'),
-  aliasError: document.getElementById('alias-error'),
   nameError: document.getElementById('name-error'),
   emailError: document.getElementById('email-error'),
   btnRegister: document.getElementById('btn-register'),
@@ -1660,8 +1659,9 @@ async function renderLeaderboard() {
     const apiData = await apiGetLeaderboard();
     const list = apiData?.data || apiData;
     if (list && list.length > 0) {
-      entries = list.map(entry => ({
-        name: entry.alias || entry.name,
+      entries = list.slice(0, 20).map(entry => ({
+        name: entry.name,
+        institution: entry.institution || '',
         score: parseInt(entry.avg_accuracy) || 0
       }));
     }
@@ -1683,10 +1683,11 @@ async function renderLeaderboard() {
       if (State.progress) {
         defaultList.push({
           name: State.progress.name,
+          institution: '',
           score: State.progress.streak.current * 100 + (State.progress.sessionsSummary ? State.progress.sessionsSummary.length * 50 : 0)
         });
       }
-      leaderboard = defaultList.sort((a, b) => b.score - a.score).slice(0, 100);
+      leaderboard = defaultList.sort((a, b) => b.score - a.score).slice(0, 20);
       localStorage.setItem('tonaris_leaderboard', JSON.stringify(leaderboard));
     }
     entries = leaderboard;
@@ -1709,11 +1710,15 @@ async function renderLeaderboard() {
       rankStyle = 'color: var(--foreground);';
     }
 
+    const institutionHtml = entry.institution
+      ? `<div class="leaderboard__institution">${sanitize(entry.institution)}</div>`
+      : '';
+
     const tr = document.createElement('tr');
     tr.style.cssText = 'border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: var(--t-sm);';
     tr.innerHTML = `
       <td style="padding: var(--s2) var(--s3); ${rankStyle}">${medal}${pos}</td>
-      <td style="padding: var(--s2) var(--s3);">${sanitize(entry.name)}</td>
+      <td style="padding: var(--s2) var(--s3);">${sanitize(entry.name)}${institutionHtml}</td>
       <td style="padding: var(--s2) var(--s3); text-align: right; font-weight: bold;">${entry.score} pts</td>
     `;
     DOM.leaderboardBody.appendChild(tr);
@@ -2517,7 +2522,7 @@ async function handleRegister() {
   const name = DOM.inputName.value.trim();
   const email = DOM.inputEmail.value.trim();
   const password = DOM.inputPassword.value.trim();
-  const alias = DOM.inputAlias.value.trim().toUpperCase();
+  const institution = DOM.registerInstitution.value.trim();
   let hasError = false;
 
   // Validar nombre
@@ -2581,7 +2586,7 @@ async function handleRegister() {
   });
 
   // Registrar en API Tonaris
-  const registerResult = await apiRegister(userId, name, email, password, alias);
+  const registerResult = await apiRegister(userId, name, email, password, institution);
   if (registerResult?.error) {
     DOM.btnRegister.classList.remove('btn--loading');
     DOM.btnRegister.textContent = 'Comenzar mi entrenamiento';

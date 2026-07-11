@@ -51,10 +51,12 @@
   --subtle:   rgba(245,243,239,0.25);  /* Texto muy sutil */
 
   /* --- ACENTO TONARIS --- */
-  --accent:        #7C4DFF;
-  --accent-dim:    rgba(124,77,255,0.12);
-  --accent-border: rgba(124,77,255,0.30);
-  --accent-glow:   0 0 32px rgba(124,77,255,0.20);
+  --accent:        #5B2A45;
+  --accent-hover:  #7A3D5C;
+  --accent-active: #3F1D30;
+  --accent-dim:    rgba(91, 42, 69, 0.12);
+  --accent-border: rgba(91, 42, 69, 0.30);
+  --accent-glow:   0 0 32px rgba(91, 42, 69, 0.5);
 
   /* --- ESTADOS --- */
   --ok:      #00C853;
@@ -609,8 +611,8 @@ input { font-family: inherit; font-size: inherit; }
   background: var(--accent); color: #fff;
   box-shadow: 0 4px 20px var(--accent-dim);
 }
-.btn--primary:hover  { background: #9C6FFF; transform: translateY(-1px); box-shadow: var(--accent-glow); }
-.btn--primary:active { background: #6030E8; transform: translateY(0); }
+.btn--primary:hover  { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--accent-glow); }
+.btn--primary:active { background: var(--accent-active); transform: translateY(0); }
 
 .btn--secondary {
   background: var(--surface); color: var(--muted);
@@ -623,18 +625,18 @@ input { font-family: inherit; font-size: inherit; }
 
 /* Ghost con acento — para CTAs secundarios visibles */
 .btn--ghost--accent {
-  color: var(--accent);
+  color: var(--text);
   border-color: var(--accent-border);
 }
 .btn--ghost--accent:hover {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent-hover);
+  color: #fff;
+  border-color: var(--accent-hover);
 }
 
 /* Botón primario en landing — glow permanente */
 .landing .btn--primary {
-  box-shadow: 0 0 32px rgba(124,77,255,0.25), 0 4px 20px var(--accent-dim);
+  box-shadow: var(--accent-glow), 0 4px 20px var(--accent-dim);
 }
 
 /* Botón claro — para acciones sin color de acento */
@@ -1072,7 +1074,7 @@ input { font-family: inherit; font-size: inherit; }
   color: var(--accent); display: flex; align-items: center; gap: 4px;
   padding: 4px 8px; border-radius: var(--r-sm); transition: background var(--tr-fast);
 }
-.btn-mini-scale:hover { background: var(--accent-dim); }
+.btn-mini-scale:hover { background: var(--accent-hover); }
 
 /* Chip de escala — cada sílaba */
 .scale-syl {
@@ -1635,6 +1637,9 @@ input { font-family: inherit; font-size: inherit; }
   .levels-grid { grid-template-columns: repeat(3, 1fr); }
   .stats-grid { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* Estilo para institución en leaderboard */
+.leaderboard__institution { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
 /* Escritorio */
 @media (min-width: 1024px) {

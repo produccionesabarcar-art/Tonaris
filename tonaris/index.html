@@ -199,19 +199,17 @@
           <span class="field__error" id="password-error" role="alert"></span>
         </div>
 
-        <!-- Campo alias -->
+        <!-- Campo institución -->
         <div class="field">
-          <label class="field__label" for="input-alias">Tu alias para el ranking</label>
+          <label class="field__label" for="register-institution">Institución (opcional)</label>
           <input
             class="field__input"
             type="text"
-            id="input-alias"
-            name="alias"
-            placeholder="Máx. 10 caracteres (ej: JAV)"
-            maxlength="10"
-            aria-describedby="alias-error"
+            id="register-institution"
+            name="institution"
+            placeholder="Ej: Escuela de Música"
+            maxlength="100"
           />
-          <span class="field__error" id="alias-error" role="alert"></span>
         </div>
 
         <button type="button" class="btn btn--primary" id="btn-register" aria-label="Crear cuenta y comenzar">
@@ -381,7 +379,7 @@
             </div>
             <div class="sess-meta__item">
               <span class="sess-meta__lbl">Tiempo</span>
-              <span class="sess-meta__val">5 min — sin mínimo</span>
+              <span class="sess-meta__val">5 min</span>
             </div>
             <div class="sess-meta__item">
               <span class="sess-meta__lbl">Tipos</span>

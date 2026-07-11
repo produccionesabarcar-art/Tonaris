@@ -10,7 +10,7 @@ const SALT_ROUNDS = 10;
 // POST /api/users/register
 async function register(req, res, next) {
   try {
-    const { user_id, name, email, password, role, alias } = req.body;
+    const { user_id, name, email, password, role, institution } = req.body;
 
     if (!user_id || !name || !email || !password) {
       return res.status(400).json({ error: 'Faltan campos obligatorios.' });
@@ -25,10 +25,10 @@ async function register(req, res, next) {
     const userRole = role === 'admin' ? 'admin' : 'estudiante';
 
     const { rows } = await pool.query(
-      `INSERT INTO users (user_id, name, email, password, role, alias)
+      `INSERT INTO users (user_id, name, email, password, role, institution)
        VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING user_id, name, email, role, alias, created_at`,
-      [user_id, name, email, hashedPassword, userRole, alias || null]
+       RETURNING user_id, name, email, role, institution, created_at`,
+      [user_id, name, email, hashedPassword, userRole, institution || null]
     );
 
     res.status(201).json(rows[0]);
