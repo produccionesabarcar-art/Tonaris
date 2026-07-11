@@ -103,6 +103,15 @@ async function apiForgotPassword(email) {
   return await res.json();
 }
 
+async function apiResetPassword(token, newPassword) {
+  const res = await fetch(`${API_URL}/api/users/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, newPassword })
+  });
+  return await res.json();
+}
+
 /* --- Helpers --- */
 function apiLogout() {
   localStorage.removeItem('tonaris_token');
@@ -115,4 +124,4 @@ function apiGetCurrentUser() {
   } catch { return null; }
 }
 
-window.api = { apiForgotPassword };
+window.api = { apiForgotPassword, apiResetPassword };

@@ -207,6 +207,12 @@ const DOM = {
   forgotMessage: document.getElementById('forgot-message'),
   linkForgotToLanding: document.getElementById('link-forgot-to-landing'),
 
+  // Reset password
+  resetPassword: document.getElementById('reset-password'),
+  resetConfirm: document.getElementById('reset-confirm'),
+  btnResetSubmit: document.getElementById('btn-reset-submit'),
+  resetMessage: document.getElementById('reset-message'),
+
   // Dashboard
   dashName: document.getElementById('dash-name'),
   dashDate: document.getElementById('dash-date'),
@@ -2689,6 +2695,43 @@ async function handleForgotPassword() {
   }, 3000);
 }
 
+async function handleResetPassword() {
+  const password = DOM.resetPassword.value.trim();
+  const confirm = DOM.resetConfirm.value.trim();
+  const messageEl = DOM.resetMessage;
+  const token = State.resetToken;
+
+  if (!password || password.length < 8) {
+    messageEl.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+    messageEl.style.color = '#ff4444'; messageEl.style.display = '';
+    return;
+  }
+  if (password !== confirm) {
+    messageEl.textContent = 'Las contraseñas no coinciden.';
+    messageEl.style.color = '#ff4444'; messageEl.style.display = '';
+    return;
+  }
+
+  DOM.btnResetSubmit.classList.add('btn--loading');
+  DOM.btnResetSubmit.textContent = 'Restableciendo...';
+
+  const result = await apiResetPassword(token, password);
+
+  DOM.btnResetSubmit.classList.remove('btn--loading');
+  DOM.btnResetSubmit.textContent = 'Restablecer';
+
+  if (result?.error) {
+    messageEl.textContent = result.error;
+    messageEl.style.color = '#ff4444'; messageEl.style.display = '';
+    return;
+  }
+
+  messageEl.textContent = '';
+  messageEl.style.display = 'none';
+  showToast('Contraseña actualizada. Ahora puedes iniciar sesión.');
+  showScreen('login');
+}
+
 /* ============================================================
    SECCIÓN 18: INICIALIZACIÓN Y EVENT LISTENERS
    ============================================================ */
@@ -2751,6 +2794,16 @@ function initEventListeners() {
       if (e.key === 'Enter') handleForgotPassword();
     });
   }
+
+  // --- RESET PASSWORD ---
+  if (DOM.btnResetSubmit) DOM.btnResetSubmit.addEventListener('click', handleResetPassword);
+  [DOM.resetPassword, DOM.resetConfirm].forEach(input => {
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleResetPassword();
+      });
+    }
+  });
 
   // --- DASHBOARD ---
   if (DOM.btnGoLevels) DOM.btnGoLevels.addEventListener('click', () => { renderLevels(); showScreen('levels'); });
@@ -2887,6 +2940,15 @@ function init() {
 
   // Configurar todos los event listeners
   initEventListeners();
+
+  // Parse query params for reset-password flow
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('screen') === 'reset-password' && params.get('token')) {
+    State.resetToken = params.get('token');
+    history.replaceState(null, '', window.location.pathname);
+    showScreen('reset');
+    return;
+  }
 
   // Verificar si ya hay un usuario registrado
   const savedProgress = loadProgress();

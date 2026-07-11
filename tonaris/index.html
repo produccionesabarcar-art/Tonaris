@@ -331,6 +331,49 @@
       <!-- /forgot-password -->
 
       <!-- ====================================================
+           PANTALLA 3c: RESTABLECER CONTRASEÑA
+           ==================================================== -->
+      <section class="screen register" id="screen-reset-password" aria-labelledby="reset-title">
+
+        <div>
+          <h2 class="register__title" id="reset-title">Nueva contraseña</h2>
+          <p class="register__sub">Escribe y confirma tu nueva contraseña.</p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="reset-password">Nueva contraseña</label>
+          <input
+            class="field__input"
+            type="password"
+            id="reset-password"
+            placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password"
+            maxlength="50"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="reset-confirm">Confirmar contraseña</label>
+          <input
+            class="field__input"
+            type="password"
+            id="reset-confirm"
+            placeholder="Repite la contraseña"
+            autocomplete="new-password"
+            maxlength="50"
+          />
+        </div>
+
+        <button type="button" class="btn btn--primary" id="btn-reset-submit" aria-label="Restablecer contraseña">
+          Restablecer
+        </button>
+
+        <p id="reset-message" style="display:none; text-align:center; font-size:var(--t-sm);"></p>
+
+      </section>
+      <!-- /reset-password -->
+
+      <!-- ====================================================
            PANTALLA 4: DASHBOARD
            ==================================================== -->
       <section class="screen dash" id="screen-dash" aria-labelledby="dash-greeting">
@@ -386,7 +429,7 @@
               <span class="sess-meta__val">Mel · Arm · Viaje</span>
             </div>
           </div>
-          <button type="button" class="btn btn--light" id="btn-start-session" aria-label="Comenzar sesión de entrenamiento">
+          <button type="button" class="btn btn--primary" id="btn-start-session" aria-label="Comenzar sesión de entrenamiento">
             ▶ &nbsp; Comenzar sesión
           </button>
         </div>

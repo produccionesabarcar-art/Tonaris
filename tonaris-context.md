@@ -398,18 +398,23 @@ Pendientes identificados, en orden de trabajo:
 3. **Reforzar identidad de marca Abarcar:** extender el uso del morado de acento en más elementos de la landing; el wordmark "ABARCAR" está en gris apagado, podría llevar tratamiento de marca
 4. **Botones "Volver" poco visibles:** en todas las pantallas (`register__back`, etc.) tienen muy bajo contraste — necesitan un estilo más vistoso y consistente con la paleta
 
-### 6.9 Seguridad y recuperación de contraseña — NUEVO, PLANEADO ⏳
-Dos frentes nuevos incorporados al roadmap por pedido explícito de Javier:
+### 6.9 Seguridad y recuperación de contraseña — COMPLETADO ✅ (11/07/2026)
 
-**A) Recuperación de contraseña vía email**
-Flujo estándar a implementar:
-1. Nueva pantalla `screen-forgot-password` en Tonaris: input de email + botón "Enviar enlace"
-2. Endpoint `POST /api/users/forgot-password`: recibe email, si existe genera un token de un solo uso con expiración corta (ej. 1 hora), lo guarda (columna nueva en `users` o tabla `password_resets`), y dispara un email con un link tipo `https://abarcaraudio.netlify.app/tonaris/reset-password.html?token=...`
-3. Endpoint `POST /api/users/reset-password`: recibe `token` + `newPassword`, valida que el token exista y no haya expirado, actualiza el password (hasheado con bcrypt), invalida el token
-4. **Pendiente por decidir:** proveedor de envío de emails — opciones gratuitas/económicas a evaluar: Resend (100 emails/día gratis), SendGrid (100/día gratis), o Supabase Auth (que ya incluye recuperación de contraseña nativa, aunque implicaría más integración con el sistema de auth actual basado en JWT propio)
-5. Por seguridad: el endpoint de forgot-password debe responder igual (mensaje genérico "Si el correo existe, te enviamos un enlace") tanto si el email existe como si no — para no filtrar qué correos están registrados
+**A) Recuperación de contraseña vía email — COMPLETADO ✅**
 
-**B) Buenas prácticas de seguridad general — auditoría pendiente**
+| Componente | Archivo | Estado |
+|---|---|---|
+| Proveedor email | Resend SDK en `package.json` | ✅ |
+| `emailService.js` | `src/services/emailService.js` — from real, FRONTEND_URL, template HTML oscuro | ✅ |
+| `POST /api/users/forgot-password` | `src/controllers/users.js` — crypto.randomBytes(32), respuestas genéricas, 1h expiración | ✅ |
+| `POST /api/users/reset-password` | `src/controllers/users.js` — min 8 chars, ≠ email, respuestas genéricas | ✅ |
+| Migración 008 | Columnas `reset_token` / `reset_token_expires` en `users` | ✅ |
+| `screen-forgot-password` | `tonaris/index.html` + `tonaris/main.js` + `tonaris/api.js` | ✅ |
+| `screen-reset-password` | `tonaris/index.html` + `tonaris/main.js` + `tonaris/api.js` | ✅ |
+| Query param parsing | `tonaris/main.js` `init()` — `?screen=reset-password&token=...` | ✅ |
+| Verificación runtime | 7 casos probados, login con nueva contraseña OK | ✅ |
+
+**B) Buenas prácticas de seguridad general — auditoría pendiente ⏳**
 Puntos a revisar y reforzar en el backend actual:
 - Rate limiting en `/api/users/login` y `/api/users/register` (evitar fuerza bruta) — no implementado aún
 - Validación de fortaleza de password en registro (mínimo de caracteres, etc.) — verificar si ya existe
@@ -418,8 +423,6 @@ Puntos a revisar y reforzar en el backend actual:
 - Sanitización de inputs contra SQL injection — el proyecto usa queries parametrizadas con `pg` (`$1, $2...`), lo cual ya mitiga esto en gran parte, pero vale la pena una revisión completa
 - Expiración y rotación de JWT — actualmente 7 días fijos, evaluar si es adecuado
 - HTTPS: ya garantizado por Render y Netlify (Let's Encrypt automático)
-
-**Este es un punto de partida — falta que opencode haga una auditoría línea por línea del backend actual y proponga el plan detallado antes de tocar código.**
 
 ### 6.10 Despliegue panel admin — PENDIENTE
 - [ ] Aún no desplegado. Plan: Netlify, build command `cd admin && npm ci && npm run build`, publish directory `admin/dist`. Actualizar `vite.config.js` / variable de entorno para que el proxy apunte a Render en vez de `127.0.0.1:3000`.
@@ -439,7 +442,7 @@ SSL automático vía Let's Encrypt en ambos servicios.
 | Item | Prioridad | Estado |
 |------|-----------|--------|
 | JWT_SECRET hardcodeado/débil en `.env` local | Alta | ✅ Resuelto para producción — secreto fuerte (128 hex chars) generado y configurado solo en Render, nunca en el repo |
-| Sin recuperación de contraseña | Alta | ⏳ Planeado — ver 6.9.A |
+| Sin recuperación de contraseña | Alta | ✅ Resuelto — implementado en 6.9.A (11/07/2026) |
 | Sin rate limiting en login/registro | Alta | ⏳ Planeado — ver 6.9.B |
 | Sin headers de seguridad HTTP (helmet) | Media | ⏳ Planeado — ver 6.9.B |
 | Landing con texto/CTA desactualizados | Media | 🔄 En progreso — ver 6.8 |

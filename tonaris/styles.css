@@ -210,14 +210,12 @@ input { font-family: inherit; font-size: inherit; }
 .hdr__scale-lbl {
   font-size: 10px;
   font-weight: 500;
-  color: var(--muted);
-  opacity: 0.65;
-  transition: color var(--tr-fast), opacity var(--tr-fast);
+  color: var(--text);
+  transition: color var(--tr-fast);
   white-space: nowrap;
 }
 .hdr__scale-btn:hover .hdr__scale-lbl {
-  opacity: 1;
-  color: var(--muted);
+  color: #fff;
 }
 
 /* Marca — logo + texto */
@@ -531,7 +529,7 @@ input { font-family: inherit; font-size: inherit; }
 }
 
 .prog-card__lbl {
-  font-size: var(--t-xs); color: var(--subtle);
+  font-size: var(--t-xs); color: var(--text);
   text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
   margin-bottom: var(--s3);
 }
@@ -551,7 +549,7 @@ input { font-family: inherit; font-size: inherit; }
   background: linear-gradient(90deg, var(--ha), var(--go));
   transition: width 600ms var(--tr-bounce);
 }
-.prog-card__frac { font-size: var(--t-xs); color: var(--subtle); }
+.prog-card__frac { font-size: var(--t-xs); color: var(--text); }
 
 /* Tarjeta de sesión */
 .sess-card {

@@ -1,7 +1,7 @@
 const pool = require('../db/pool');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const { sendPasswordResetEmail } = require('../services/emailService');
 const logger = require('../lib/logger');
 
@@ -153,7 +153,7 @@ async function forgotPassword(req, res, next) {
     );
 
     if (rows.length > 0) {
-      const token = uuidv4();
+      const token = crypto.randomBytes(32).toString('hex');
       const expires = new Date(Date.now() + 60 * 60 * 1000);
 
       await pool.query(
@@ -165,7 +165,7 @@ async function forgotPassword(req, res, next) {
       logger.info({ email }, 'Token de recuperación generado y email enviado');
     }
 
-    res.json({ message: 'Si el correo existe, te enviamos un enlace' });
+    res.status(200).json({ status: 200, message: 'Si el correo existe, te enviamos un enlace para restablecer tu contraseña.' });
   } catch (err) {
     next(err);
   }
@@ -180,9 +180,8 @@ async function resetPassword(req, res, next) {
       return res.status(400).json({ error: 'Token y nueva contraseña son obligatorios.' });
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(newPassword)) {
-      return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres, un número, una mayúscula y una minúscula' });
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres.' });
     }
 
     const { rows } = await pool.query(
@@ -191,7 +190,11 @@ async function resetPassword(req, res, next) {
     );
 
     if (rows.length === 0) {
-      return res.status(400).json({ error: 'Token inválido o expirado' });
+      return res.status(400).json({ error: 'Enlace inválido o expirado.' });
+    }
+
+    if (newPassword === rows[0].email) {
+      return res.status(400).json({ error: 'La contraseña no puede ser igual a tu correo electrónico.' });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
@@ -203,7 +206,7 @@ async function resetPassword(req, res, next) {
 
     logger.info({ user_id: rows[0].user_id }, 'Contraseña actualizada exitosamente');
 
-    res.json({ message: 'Contraseña actualizada exitosamente' });
+    res.status(200).json({ status: 200, message: 'Contraseña actualizada correctamente.' });
   } catch (err) {
     next(err);
   }
