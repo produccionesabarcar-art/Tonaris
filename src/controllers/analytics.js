@@ -1,4 +1,5 @@
 const pool = require('../db/pool');
+const logger = require('../lib/logger');
 
 // Estructura para respuestas
 function successResponse(data) {
@@ -13,16 +14,47 @@ function errorResponse(message) {
 async function getStreak(req, res) {
   try {
     const { userId } = req.params;
-    const query = `
-      SELECT DATE(created_at) as day
+
+    const sessionQuery = `
+      SELECT DISTINCT TO_CHAR(created_at, 'YYYY-MM-DD') as day
       FROM sessions
       WHERE user_id = $1
-      GROUP BY DATE(created_at)
       ORDER BY day DESC;
     `;
-    const result = await pool.query(query, [userId]);
-    res.status(200).json(successResponse(result.rows));
+    const sessionResult = await pool.query(sessionQuery, [userId]);
+
+    const userQuery = `
+      SELECT freezes_available, daily_goal
+      FROM users
+      WHERE user_id = $1;
+    `;
+    const userResult = await pool.query(userQuery, [userId]);
+
+    const user = userResult.rows[0] || { freezes_available: 0, daily_goal: 1 };
+
+    const days = sessionResult.rows.map(r => r.day);
+
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
+    let usedFreezeToday = false;
+    if (!days.includes(today) && Number(user.freezes_available) > 0) {
+      const yd = new Date(now.getTime() - 86400000);
+      const yesterday = `${yd.getFullYear()}-${pad(yd.getMonth() + 1)}-${pad(yd.getDate())}`;
+      if (days.includes(yesterday)) {
+        usedFreezeToday = true;
+      }
+    }
+
+    res.status(200).json({
+      ...successResponse(sessionResult.rows),
+      freezes_available: Number(user.freezes_available),
+      daily_goal: Number(user.daily_goal || 1),
+      used_freeze_today: usedFreezeToday
+    });
   } catch (error) {
+    logger.error(error, '[getStreak]');
     res.status(500).json(errorResponse(error.message));
   }
 }
@@ -84,8 +116,18 @@ async function getSummary(req, res) {
       WHERE user_id = $1;
     `;
     const result = await pool.query(query, [userId]);
-    res.status(200).json(successResponse(result.rows[0]));
+
+    const userResult = await pool.query(
+      'SELECT rank FROM users WHERE user_id = $1',
+      [userId]
+    );
+
+    res.status(200).json({
+      ...successResponse(result.rows[0]),
+      rank: userResult.rows[0]?.rank || 'Oyente'
+    });
   } catch (error) {
+    logger.error(error, '[getSummary]');
     res.status(500).json(errorResponse(error.message));
   }
 }
@@ -113,10 +155,102 @@ async function getLeaderboard(req, res) {
   }
 }
 
+async function getTrend(req, res) {
+  try {
+    const { userId, skillId } = req.params;
+
+    const query = `
+      SELECT
+        'last_7d' as period,
+        COUNT(*)::int as total,
+        ROUND(COALESCE(AVG(CASE WHEN is_correct THEN 100.0 ELSE 0 END), 0)) as accuracy,
+        ROUND(COALESCE(AVG(response_ms), 0))::int as avg_ms
+      FROM exercise_results
+      WHERE user_id = $1 AND interval = $2
+        AND created_at >= CURRENT_DATE - INTERVAL '7 days'
+      UNION ALL
+      SELECT
+        'prev_7d' as period,
+        COUNT(*)::int as total,
+        ROUND(COALESCE(AVG(CASE WHEN is_correct THEN 100.0 ELSE 0 END), 0)) as accuracy,
+        ROUND(COALESCE(AVG(response_ms), 0))::int as avg_ms
+      FROM exercise_results
+      WHERE user_id = $1 AND interval = $2
+        AND created_at >= CURRENT_DATE - INTERVAL '14 days'
+        AND created_at < CURRENT_DATE - INTERVAL '7 days';
+    `;
+
+    const result = await pool.query(query, [userId, skillId]);
+
+    const last = result.rows.find(r => r.period === 'last_7d') || {};
+    const prev = result.rows.find(r => r.period === 'prev_7d') || {};
+
+    res.status(200).json({
+      status: 200,
+      data: {
+        skillId,
+        accuracy_last_7d: last.accuracy ?? 0,
+        accuracy_prev_7d: prev.accuracy ?? 0,
+        avg_ms_last_7d: last.avg_ms ?? 0,
+        avg_ms_prev_7d: prev.avg_ms ?? 0
+      }
+    });
+  } catch (error) {
+    logger.error(error, '[getTrend]');
+    res.status(500).json(errorResponse(error.message));
+  }
+}
+
+async function getMastery(req, res) {
+  try {
+    const { userId } = req.params;
+    const result = await pool.query(
+      'SELECT * FROM skill_mastery WHERE user_id = $1 ORDER BY skill_id',
+      [userId]
+    );
+    res.status(200).json(successResponse(result.rows));
+  } catch (error) {
+    logger.error(error, '[getMastery]');
+    res.status(500).json(errorResponse(error.message));
+  }
+}
+
+async function updateDailyGoal(req, res) {
+  try {
+    const { userId } = req.params;
+    const { dailyGoal } = req.body;
+
+    if (dailyGoal === undefined || !Number.isInteger(dailyGoal) || dailyGoal < 1) {
+      return res.status(400).json({ error: 'dailyGoal debe ser un entero positivo.' });
+    }
+
+    if (req.user.user_id !== userId) {
+      return res.status(403).json({ error: 'No puedes modificar la meta de otro usuario.' });
+    }
+
+    const result = await pool.query(
+      'UPDATE users SET daily_goal = $1 WHERE user_id = $2 RETURNING user_id, daily_goal',
+      [dailyGoal, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+
+    res.status(200).json({ status: 200, data: result.rows[0] });
+  } catch (error) {
+    logger.error(error, '[updateDailyGoal]');
+    res.status(500).json(errorResponse(error.message));
+  }
+}
+
 module.exports = {
   getStreak,
   getHistory,
   getIntervals,
   getSummary,
-  getLeaderboard
+  getLeaderboard,
+  getTrend,
+  getMastery,
+  updateDailyGoal
 };

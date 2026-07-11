@@ -1,6 +1,6 @@
 # Tonaris — Documento de Contexto para Agentes Autónomos
 > Leer este documento completo antes de ejecutar cualquier acción.
-> Contexto actualizado al 02/07/2026.
+> Contexto actualizado al 11/07/2026.
 
 ---
 
@@ -10,8 +10,8 @@
 **Descripción:** Plataforma web de entrenamiento auditivo basada en el círculo de quintas y el sistema pedagógico PAIEM de Abarcar Audio.
 **Propietario:** Javier — fundador de Abarcar Audio, Bogotá, Colombia.
 **Repositorio:** `https://github.com/produccionesabarcar-art/Tonaris.git`
-**Rama activa:** `main`
-**Ruta local:** `E:\TonarisBackend\`
+**Rama activa:** `feat/security-password-reset`
+**Ruta local:** `/home/abarcar/Workspace/TonarisBackend/`
 
 ---
 
@@ -89,7 +89,8 @@ E:\TonarisBackend\
 │   │   ├── errorHandler.js            ← usa logger (pino)
 │   │   └── auth.js                    ← authenticate + authorizeAdmin
 │   ├── lib/
-│   │   └── logger.js                  ← instancia pino centralizada (Etapa 6)
+│   │   ├── logger.js                  ← instancia pino centralizada (Etapa 6)
+│   │   └── ranks.js                   ← escalera de rangos de gamificación (Etapa 7)
 │   ├── db/
 │   │   ├── pool.js                    ← exporta pool directamente (sin destructuring), usa logger
 │   │   └── migrations/
@@ -100,6 +101,11 @@ E:\TonarisBackend\
 │   │       ├── 005_add_role_to_users.sql
 │   │       ├── 006_create_exercise_results.sql
 │   │       ├── 007_add_alias_to_users.sql
+│   │       ├── 008_add_password_reset.sql
+│   │       ├── 009_add_institution_to_users.sql
+│   │       ├── 010_create_skill_mastery.sql
+│   │       ├── 011_add_gamification_to_users.sql
+│   │       ├── 012_create_user_rewards.sql
 │   │       └── migrationRunner.js     ← usa logger
 │   └── app.js                          ← usa logger, requiere ./lib/logger
 ├── Dockerfile                          ← Etapa 6
@@ -143,13 +149,19 @@ JWT_SECRET=7208c14cbfd3d065557476b3c378464e16cbc074814f3666f73674ec4a76ca94aa712
 ```sql
 -- Tabla users
 CREATE TABLE users (
-  user_id    VARCHAR(20)  PRIMARY KEY,
-  name       VARCHAR(100) NOT NULL,
-  email      VARCHAR(150) UNIQUE NOT NULL,
-  password   VARCHAR(255) NOT NULL,
-  role       VARCHAR(20)  NOT NULL DEFAULT 'estudiante',
-  alias      VARCHAR(10),
-  created_at TIMESTAMP    DEFAULT NOW()
+  user_id           VARCHAR(20)  PRIMARY KEY,
+  name              VARCHAR(100) NOT NULL,
+  email             VARCHAR(150) UNIQUE NOT NULL,
+  password          VARCHAR(255) NOT NULL,
+  role              VARCHAR(20)  NOT NULL DEFAULT 'estudiante',
+  alias             VARCHAR(10),
+  institution       VARCHAR(100),
+  reset_token       VARCHAR(255),
+  reset_token_expires TIMESTAMP,
+  daily_goal        INT          NOT NULL DEFAULT 1,
+  freezes_available INT          NOT NULL DEFAULT 0,
+  rank              VARCHAR(30)  NOT NULL DEFAULT 'Oyente',
+  created_at        TIMESTAMP    DEFAULT NOW()
 );
 
 -- Tabla sessions
@@ -175,6 +187,25 @@ CREATE TABLE exercise_results (
   created_at  TIMESTAMP    DEFAULT NOW()
 );
 
+-- Tabla skill_mastery (Etapa 7)
+CREATE TABLE skill_mastery (
+  user_id     VARCHAR(20)  REFERENCES users(user_id),
+  skill_id    VARCHAR(30)  NOT NULL,
+  mastery     VARCHAR(10)  NOT NULL DEFAULT 'unknown',
+  accuracy_7d NUMERIC,
+  avg_ms_7d   INT,
+  updated_at  TIMESTAMP    DEFAULT NOW(),
+  PRIMARY KEY (user_id, skill_id)
+);
+
+-- Tabla user_rewards (Etapa 7 — reservada para futuro)
+CREATE TABLE user_rewards (
+  reward_id   VARCHAR(30) PRIMARY KEY,
+  user_id     VARCHAR(20) REFERENCES users(user_id),
+  reward_type VARCHAR(30) NOT NULL,
+  unlocked_at TIMESTAMP   DEFAULT NOW()
+);
+
 -- Tabla migrations (control interno)
 CREATE TABLE migrations (
   id          SERIAL       PRIMARY KEY,
@@ -183,9 +214,7 @@ CREATE TABLE migrations (
 );
 ```
 
-**⏳ PENDIENTE (ver 6.9):** falta una migración nueva para soportar recuperación de contraseña — típicamente una tabla `password_resets` (o columnas `reset_token` + `reset_token_expires` en `users`).
-
-**Nota:** las 7 migraciones ya corrieron exitosamente contra la base de producción en Supabase — verificado en Table Editor (`migrations`, `sessions`, `exercise_results`, `users` con relaciones correctas).
+**Nota:** las migraciones 001-012 ya corrieron exitosamente contra la base local y están listas para producción.
 
 ### 3.5 API — Rutas disponibles
 
@@ -205,8 +234,11 @@ CREATE TABLE migrations (
 | GET | `/api/analytics/intervals/:userId` | ✅ | Precisión por intervalo |
 | GET | `/api/analytics/summary/:userId` | ✅ | Resumen del estudiante |
 | GET | `/api/analytics/leaderboard` | ❌ | Ranking público (sin auth) |
-| POST | `/api/users/forgot-password` | ❌ | ⏳ NO EXISTE — planeado, ver 6.9 |
-| POST | `/api/users/reset-password` | ❌ | ⏳ NO EXISTE — planeado, ver 6.9 |
+| GET | `/api/analytics/trend/:userId/:skillId` | ✅ | Comparación accuracy/avg_ms últimos 7d vs 7d previos (Etapa 7) |
+| GET | `/api/analytics/mastery/:userId` | ✅ | Lista completa de skill_mastery del usuario (Etapa 7) |
+| PATCH | `/api/analytics/daily-goal/:userId` | ✅ | Actualiza daily_goal, solo el propio usuario (Etapa 7) |
+| POST | `/api/users/forgot-password` | ✅ | Recuperación de contraseña — envía email con token (Etapa 6.9) |
+| POST | `/api/users/reset-password` | ✅ | Restablece contraseña con token (Etapa 6.9) |
 
 ### 3.6 api.js — funciones disponibles en Tonaris
 
@@ -265,6 +297,7 @@ apiGetCurrentUser()  // lee tonaris_api_user de localStorage
 | 4 | Administración (panel React) | ✅ COMPLETADA |
 | 5 | Analítica + integración Tonaris | ✅ COMPLETADA |
 | 6 | Producción (Docker, CI/CD, despliegue, seguridad, UX) | 🔄 EN PROGRESO |
+| 7 | Gamificación (rachas, freezes, metas, rangos, analytics) | ✅ COMPLETADA |
 
 ---
 
@@ -489,7 +522,7 @@ Antes de cualquier modificación: mostrar las líneas exactas con números, el c
 3. Alcance estricto — no tocar lo que no se pidió
 4. Verificar después de cada cambio que el servidor arranca (local) o que el endpoint responde (producción) — no dar un fix por cerrado solo con relectura de líneas si es verificable en runtime
 5. Explicar siempre, de forma breve, el **para qué**, **por qué** y **cómo** de cada acción propuesta
-6. **Este documento (`tonaris-context.md`) lo actualiza Javier, no los agentes** — opencode no debe editarlo directamente, solo reportar avances para que se incorporen después
+6. **Este documento (`tonaris-context.md`) lo actualiza Javier, no los agentes** — opencode no debe editarlo directamente, solo reportar avances para que se incorporen después. **Excepción:** cuando Javier pida explícitamente una actualización del documento (como en esta sesión), el agente puede editarlo sin esperar confirmación adicional.
 
 ---
 
@@ -539,6 +572,7 @@ rs
 | 1782185263746 | produccionesabarcar@gmail.com | estudiante | JAV | tiene sesiones |
 | usr_6yoo12o7 | javier.e.vargas.t@gmail.com | estudiante | JAVIER | sin sesiones |
 | usr_5u4y4r64 | prueba123@abarcar.co | estudiante | JAVIERV | sin sesiones |
+| testuser1 | testuser@test.com | estudiante | — | usuario de prueba para desarrollo local de gamificación, múltiples sesiones y exercise_results, rank Escuchador |
 
 Nota: estos usuarios existían en la base local. La base de producción (Supabase) arrancó limpia — confirmar si se necesita migrar/recrear estos usuarios ahí o si se registrarán de nuevo naturalmente.
 
@@ -559,5 +593,102 @@ Nota: estos usuarios existían en la base local. La base de producción (Supabas
 
 ---
 
-*Documento actualizado al 02/07/2026.*
+## 13. ETAPA 7 — GAMIFICACIÓN (Fases 0-2, 5)
+
+**Estado:** ✅ COMPLETADA
+**Rama:** `feat/security-password-reset` (integrada con cambios de seguridad de Etapa 6.9)
+**Contexto de datos reales:** solo existen 2 skill_id en `exercise_results` hoy (`2m`, `5m`) — los rangos altos de la escalera (Arquitecto Tonal, Oído Absoluto) son inalcanzables hasta que la futura modalidad de intervalos agregue más skills.
+
+### 13.1 Migraciones nuevas
+
+| Migración | Tabla/Columnas | Propósito |
+|-----------|---------------|-----------|
+| `010_create_skill_mastery.sql` | `skill_mastery(user_id, skill_id, mastery, accuracy_7d, avg_ms_7d, updated_at)` — PK compuesta `(user_id, skill_id)` | Almacena el nivel de dominio por habilidad, actualizado cada vez que se hace una sesión con exercise_results |
+| `011_add_gamification_to_users.sql` | Columnas nuevas en `users`: `daily_goal INT DEFAULT 1`, `freezes_available INT DEFAULT 0`, `rank VARCHAR(30) DEFAULT 'Oyente'` | Meta diaria de sesiones, freezes acumulables, rango narrativo |
+| `012_create_user_rewards.sql` | `user_rewards(reward_id, user_id, reward_type, unlocked_at)` | Tabla reservada para futuros logros/recompensas — sin lógica aún |
+
+### 13.2 Nuevo archivo: `src/lib/ranks.js`
+
+Escalera de rangos basada en cantidad de skills en estado `'mastered'` dentro de `skill_mastery`:
+
+| Rango | Skills mastered | Visual |
+|-------|----------------|--------|
+| Oyente | 0 | Rango inicial por defecto |
+| Escuchador | 1-2 | Primer logro |
+| Afinador | 3-4 | |
+| Armonista | 5-6 | |
+| Arquitecto Tonal | 7-9 | |
+| Oído Absoluto | 10+ | Rango máximo |
+
+Exporta:
+- `RANKS` — array de objetos `{ name, minMastered }`
+- `getRankFromMasteredCount(count)` — recibe un entero, devuelve el nombre del rango
+
+### 13.3 Endpoints nuevos
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/api/analytics/trend/:userId/:skillId` | ✅ | Compara `avg(response_ms)` y accuracy de `exercise_results` en los últimos 7 días vs los 7 días anteriores (día -14 a -7), filtrando por `interval = skillId`. Responde: `{ skillId, accuracy_last_7d, accuracy_prev_7d, avg_ms_last_7d, avg_ms_prev_7d }` |
+| GET | `/api/analytics/mastery/:userId` | ✅ | `SELECT * FROM skill_mastery WHERE user_id = $1`, devuelve array completo |
+| PATCH | `/api/analytics/daily-goal/:userId` | ✅ | Actualiza `daily_goal` en `users`. Valida entero positivo. Verifica que `req.user.user_id === :userId` (no dejar que un usuario cambie la meta de otro) |
+
+### 13.4 Cambios en `src/controllers/sessions.js` — `createSession`
+
+Flujo completo por sesión:
+
+1. **Insertar sesión** en `sessions` (como antes)
+2. **Insertar exercise_results** — si el body incluye `results[]`, cada elemento (`{ interval, is_correct, response_ms }`) se inserta en `exercise_results` con `result_id = sessionId-index`
+3. **Recalcular y UPSERT skill_mastery** — por cada `interval` único en los resultados:
+   - Consulta `COUNT(*)`, accuracy y `avg(response_ms)` de los últimos 7 días en `exercise_results`
+   - Determina mastery: `≥90% y ≥20 intentos → mastered`, `≥70% → stable`, `≥40% → learning`, else `unknown`
+   - `INSERT ... ON CONFLICT (user_id, skill_id) DO UPDATE`
+4. **Otorgar freeze por racha** — si es la primera sesión del día, calcula la racha de días consecutivos; si `streakDays > 0 && streakDays % 7 === 0 && freezes_available < 2`, incrementa `freezes_available` en 1 (capped a 2 vía `LEAST`)
+5. **Actualizar rango** — cuenta `COUNT(*) WHERE mastery = 'mastered'` en `skill_mastery`, llama `getRankFromMasteredCount()`, hace `UPDATE users SET rank = $1 WHERE rank != $1` (solo escribe si cambió)
+
+### 13.5 Cambios en `src/controllers/analytics.js`
+
+**getStreak** — ahora además de devolver el array de días con sesiones en `data`, incluye en la respuesta:
+- `freezes_available` (desde `users`)
+- `daily_goal` (desde `users`)
+- `used_freeze_today` — booleano: `true` si hoy no hay sesión, el usuario tiene freezes disponibles, y ayer sí hubo sesión (el freeze mantiene viva la racha)
+
+La estructura `data` original (array de `{ day: "YYYY-MM-DD" }`) se mantiene intacta — los nuevos campos se agregan al mismo nivel del JSON.
+
+**getSummary** — ahora también consulta y devuelve el campo `rank` del usuario al mismo nivel que `data`:
+```json
+{
+  "status": 200,
+  "data": { "total_sessions": ..., "avg_accuracy": ..., "best_score": ... },
+  "rank": "Escuchador"
+}
+```
+
+### 13.6 Estado de verificación en runtime
+
+Todo probado en runtime local con el usuario de prueba `testuser1`:
+
+| Prueba | Resultado |
+|--------|-----------|
+| `POST /api/sessions` con `results[]` | Sesión creada + exercise_results insertados |
+| `skill_mastery` después de la sesión | UPSERT funciona — mastery calculado correctamente |
+| Mastery alcanzado (2m: 97%, 29 intentos) | `mastery = 'mastered'` |
+| Freeze otorgado (7 días de racha) | `freezes_available` incrementado de 0 a 1, log confirmado |
+| Rango actualizado tras mastery | `rank` cambió de `Oyente` a `Escuchador` |
+| `GET /api/analytics/streak/:userId` | Incluye `freezes_available: 1, daily_goal: 3, used_freeze_today: false` |
+| `GET /api/analytics/summary/:userId` | Incluye `rank: "Escuchador"` |
+| `GET /api/analytics/trend/:userId/:skillId` | Devuelve comparativa 7d vs prev 7d |
+| `GET /api/analytics/mastery/:userId` | Lista completa de skill_mastery |
+| `PATCH /api/analytics/daily-goal/:userId` | Actualiza correctamente, 403 si otro usuario intenta |
+| `PATCH` con userId ajeno | 403 — `No puedes modificar la meta de otro usuario` |
+
+### 13.7 Pendiente para futuro
+
+- **Fase 3** — dificultad adaptativa en `tonaris/main.js` (ajuste dinámico según accuracy del estudiante)
+- **Fase 4** — mecánicas dentro de sesión en `main.js` (feedback visual, temporizador por ejercicio)
+- **Fase 6** — modalidad de intervalos (necesaria para que existan más de 2 skill_id y los rangos altos sean alcanzables)
+- Decisión final sobre color Ciruela en la paleta de marca
+
+---
+
+*Documento actualizado al 11/07/2026.*
 *Próxima acción: continuar rediseño de landing (Sección 6.8), y pedirle a opencode una auditoría de seguridad detallada antes de implementar recuperación de contraseña (Sección 6.9).*
