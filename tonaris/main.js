@@ -2819,6 +2819,7 @@ function initEventListeners() {
 
   DOM.btnLogout.addEventListener('click', () => {
     if (confirm('¿Cerrar sesión? Se borrará tu progreso local.')) {
+      apiLogout();
       localStorage.removeItem('tonaris_progress');
       State.progress = null; State.user = null;
       showScreen('landing'); showToast('Sesión cerrada.');
