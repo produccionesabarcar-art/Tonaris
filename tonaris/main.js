@@ -164,6 +164,7 @@ const DOM = {
     landing: document.getElementById('screen-landing'),
     register: document.getElementById('screen-register'),
     login: document.getElementById('screen-login'),
+    forgot: document.getElementById('screen-forgot-password'),
     dash: document.getElementById('screen-dash'),
     warmup: document.getElementById('screen-warmup'),
     exercise: document.getElementById('screen-exercise'),
@@ -198,6 +199,14 @@ const DOM = {
   loginPasswordError: document.getElementById('login-password-error'),
   btnLogin: document.getElementById('btn-login'),
   linkLoginToRegister: document.getElementById('link-login-to-register'),
+  linkLoginForgot: document.getElementById('link-login-forgot'),
+
+  // Forgot password
+  btnBackForgot: document.getElementById('btn-back-forgot'),
+  forgotEmail: document.getElementById('forgot-email'),
+  btnForgotSubmit: document.getElementById('btn-forgot-submit'),
+  forgotMessage: document.getElementById('forgot-message'),
+  linkForgotToLanding: document.getElementById('link-forgot-to-landing'),
 
   // Dashboard
   dashName: document.getElementById('dash-name'),
@@ -2651,6 +2660,31 @@ async function handleLogin() {
 }
 
 /* ============================================================
+   SECCIÓN 17b: RECUPERACIÓN DE CONTRASEÑA
+   ============================================================ */
+
+async function handleForgotPassword() {
+  const email = DOM.forgotEmail.value.trim();
+  const messageEl = DOM.forgotMessage;
+
+  if (!email) {
+    messageEl.textContent = 'Por favor ingresa tu correo';
+    messageEl.style.color = '#ff4444';
+    messageEl.style.display = '';
+    return;
+  }
+
+  const result = await apiForgotPassword(email);
+  messageEl.style.color = '#4CAF50';
+  messageEl.textContent = 'Si el correo existe, te enviamos un enlace de recuperación';
+  messageEl.style.display = '';
+
+  setTimeout(() => {
+    showScreen('login');
+  }, 3000);
+}
+
+/* ============================================================
    SECCIÓN 18: INICIALIZACIÓN Y EVENT LISTENERS
    ============================================================ */
 
@@ -2693,6 +2727,25 @@ function initEventListeners() {
       });
     }
   });
+
+  // --- FORGOT PASSWORD ---
+  if (DOM.btnBackForgot) DOM.btnBackForgot.addEventListener('click', () => showScreen('landing'));
+  if (DOM.btnForgotSubmit) DOM.btnForgotSubmit.addEventListener('click', handleForgotPassword);
+  if (DOM.linkForgotToLanding) DOM.linkForgotToLanding.addEventListener('click', e => {
+    e.preventDefault();
+    showScreen('landing');
+  });
+  if (DOM.linkLoginForgot) DOM.linkLoginForgot.addEventListener('click', e => {
+    e.preventDefault();
+    showScreen('forgot');
+  });
+
+  // Forgot con Enter
+  if (DOM.forgotEmail) {
+    DOM.forgotEmail.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleForgotPassword();
+    });
+  }
 
   // --- DASHBOARD ---
   if (DOM.btnGoLevels) DOM.btnGoLevels.addEventListener('click', () => { renderLevels(); showScreen('levels'); });

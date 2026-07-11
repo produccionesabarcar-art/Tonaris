@@ -203,7 +203,7 @@ input { font-family: inherit; font-size: inherit; }
   background: transparent;
   transition: all var(--tr-fast);
 }
-.hdr__scale-btn:hover { color: var(--accent); background: var(--surface2); }
+.hdr__scale-btn:hover { color: var(--muted); background: var(--surface2); }
 
 .hdr__scale-lbl {
   font-size: 10px;
@@ -215,7 +215,7 @@ input { font-family: inherit; font-size: inherit; }
 }
 .hdr__scale-btn:hover .hdr__scale-lbl {
   opacity: 1;
-  color: var(--accent);
+  color: var(--muted);
 }
 
 /* Marca — logo + texto */
@@ -504,7 +504,7 @@ input { font-family: inherit; font-size: inherit; }
   line-height: 1;
   letter-spacing: -0.03em;
 }
-.dash__hello span { color: var(--accent); font-style: normal; }
+.dash__hello span { color: var(--text); font-style: normal; }
 
 .dash__date { font-size: var(--t-xs); color: var(--subtle); margin-top: var(--s1); letter-spacing: 0.06em; }
 
@@ -620,6 +620,33 @@ input { font-family: inherit; font-size: inherit; }
 
 .btn--ghost { background: transparent; color: var(--muted); border: 1px solid var(--border-2); }
 .btn--ghost:hover { background: var(--surface); color: var(--text); }
+
+/* Ghost con acento — para CTAs secundarios visibles */
+.btn--ghost--accent {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+.btn--ghost--accent:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Botón primario en landing — glow permanente */
+.landing .btn--primary {
+  box-shadow: 0 0 32px rgba(124,77,255,0.25), 0 4px 20px var(--accent-dim);
+}
+
+/* Botón claro — para acciones sin color de acento */
+.btn--light {
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+}
+.btn--light:hover {
+  background: #fff;
+  box-shadow: 0 0 24px rgba(255,255,255,0.15);
+}
 
 /* Botón de carga */
 .btn--loading { opacity: 0.65; pointer-events: none; }

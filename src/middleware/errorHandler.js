@@ -8,7 +8,8 @@ function errorHandler(err, req, res, next) {
   logger.error(err, `[ERROR] ${req.method} ${req.path}`);
 
   const status = err.status || 500;
-  const message = err.message || 'Error interno del servidor.';
+  const isProduction = process.env.NODE_ENV === 'production';
+  const message = isProduction ? 'Error interno del servidor.' : (err.message || 'Error interno del servidor.');
 
   res.status(status).json({ error: message });
 }

@@ -1,6 +1,9 @@
 const pool = require('../db/pool');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
+const { sendPasswordResetEmail } = require('../services/emailService');
+const logger = require('../lib/logger');
 
 const SALT_ROUNDS = 10;
 
@@ -11,6 +14,11 @@ async function register(req, res, next) {
 
     if (!user_id || !name || !email || !password) {
       return res.status(400).json({ error: 'Faltan campos obligatorios.' });
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres, un número, una mayúscula y una minúscula' });
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -130,4 +138,75 @@ async function updateAlias(req, res, next) {
   }
 }
 
-module.exports = { register, login, getById, getAll, updateAlias };
+// POST /api/users/forgot-password
+async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email es obligatorio.' });
+    }
+
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (rows.length > 0) {
+      const token = uuidv4();
+      const expires = new Date(Date.now() + 60 * 60 * 1000);
+
+      await pool.query(
+        'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE email = $3',
+        [token, expires, email]
+      );
+
+      await sendPasswordResetEmail(email, token);
+      logger.info({ email }, 'Token de recuperación generado y email enviado');
+    }
+
+    res.json({ message: 'Si el correo existe, te enviamos un enlace' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/users/reset-password
+async function resetPassword(req, res, next) {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token y nueva contraseña son obligatorios.' });
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres, un número, una mayúscula y una minúscula' });
+    }
+
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()',
+      [token]
+    );
+
+    if (rows.length === 0) {
+      return res.status(400).json({ error: 'Token inválido o expirado' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+    await pool.query(
+      'UPDATE users SET password = $1, reset_token = NULL, reset_token_expires = NULL WHERE user_id = $2',
+      [hashedPassword, rows[0].user_id]
+    );
+
+    logger.info({ user_id: rows[0].user_id }, 'Contraseña actualizada exitosamente');
+
+    res.json({ message: 'Contraseña actualizada exitosamente' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, getById, getAll, updateAlias, forgotPassword, resetPassword };

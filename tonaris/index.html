@@ -11,12 +11,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Tonaris — Entrena tu oído musical sin Do-Re-Mi. 10 minutos al día. Por ABARCAR." />
+  <meta name="description" content="Tonaris — Entrena tu oído musical sin Do-Re-Mi. 5 minutos al día. Por ABARCAR." />
   <meta name="theme-color" content="#0A0A0C" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="Tonaris por ABARCAR" />
-  <meta property="og:description" content="Aprende a escuchar música. Sin teoría. 10 minutos al día." />
+  <meta property="og:description" content="Aprende a escuchar música. Sin teoría. 5 minutos al día." />
   <meta property="og:type" content="website" />
 
   <title>Tonaris — ABARCAR</title>
@@ -105,7 +105,7 @@
 
         <p class="landing__sub">
           Sin Do-Re-Mi. Sin teoría.<br>
-          Solo oído, sensación y 10 minutos al día.
+          Solo oído, sensación y 5 minutos al día.
         </p>
 
         <!-- Preview de las 7 sílabas -->
@@ -119,21 +119,21 @@
           <span class="chip chip--md chip--za" role="listitem" aria-label="Zá — Tensión">Zá</span>
         </div>
 
-        <!-- Bullets de promesa -->
-        <ul class="landing__bullets" role="list">
-          <li class="landing__bullet">Sin instrumento ni conocimiento previo</li>
-          <li class="landing__bullet">10 minutos al día — máximo 15</li>
-          <li class="landing__bullet">Tres tipos de ejercicio por tonalidad</li>
-          <li class="landing__bullet">Las 12 tonalidades desde el día 1</li>
-        </ul>
-
         <button type="button" class="btn btn--primary" id="btn-go-register" aria-label="Comenzar entrenamiento auditivo">
           ▶ &nbsp; Empezar ahora — es gratis
         </button>
 
-        <button type="button" class="btn btn--ghost" id="btn-go-login" style="margin-top:var(--s3);" aria-label="Iniciar sesión">
+        <button type="button" class="btn btn--ghost btn--ghost--accent" id="btn-go-login" aria-label="Iniciar sesión">
           ¿Ya tienes cuenta? Inicia sesión
         </button>
+
+        <!-- Bullets de promesa -->
+        <ul class="landing__bullets" role="list">
+          <li class="landing__bullet">Sin instrumento ni conocimiento previo</li>
+          <li class="landing__bullet">5 minutos al día — sin mínimo requerido</li>
+          <li class="landing__bullet">Tres tipos de ejercicio por tonalidad</li>
+          <li class="landing__bullet">Las 12 tonalidades desde el día 1</li>
+        </ul>
 
       </section>
       <!-- /landing -->
@@ -282,8 +282,55 @@
           </a>
         </p>
 
+        <p class="register__privacy" style="text-align:center; margin-top:0;">
+          <a href="#" id="link-login-forgot" style="color:var(--subtle);text-decoration:underline;font-size:var(--t-sm);">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </p>
+
       </section>
       <!-- /login -->
+
+      <!-- ====================================================
+           PANTALLA 3b: RECUPERAR CONTRASEÑA
+           ==================================================== -->
+      <section class="screen register" id="screen-forgot-password" aria-labelledby="forgot-title">
+
+        <button type="button" class="register__back" id="btn-back-forgot" aria-label="Volver a la página de inicio">
+          ← Volver al inicio
+        </button>
+
+        <div>
+          <h2 class="register__title" id="forgot-title">Recuperar contraseña</h2>
+          <p class="register__sub">Ingresa tu correo y te enviaremos un enlace.</p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="forgot-email">Tu email</label>
+          <input
+            class="field__input"
+            type="email"
+            id="forgot-email"
+            name="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <button type="button" class="btn btn--primary" id="btn-forgot-submit" aria-label="Enviar enlace de recuperación">
+          Enviar enlace de recuperación
+        </button>
+
+        <p id="forgot-message" style="display:none; text-align:center; font-size:var(--t-sm);"></p>
+
+        <p class="register__privacy" style="text-align:center;">
+          <a href="#" id="link-forgot-to-landing" style="color:var(--accent);text-decoration:underline;">
+            Volver al inicio
+          </a>
+        </p>
+
+      </section>
+      <!-- /forgot-password -->
 
       <!-- ====================================================
            PANTALLA 4: DASHBOARD
@@ -303,7 +350,7 @@
           <span class="reminder__icon" aria-hidden="true">⏰</span>
           <p class="reminder__text">
             Tu sesión de hoy está pendiente.<br>
-            <strong>10 minutos son suficientes.</strong> No pierdas tu racha.
+            <strong>5 minutos son suficientes.</strong> No pierdas tu racha.
           </p>
         </div>
 
@@ -334,14 +381,14 @@
             </div>
             <div class="sess-meta__item">
               <span class="sess-meta__lbl">Tiempo</span>
-              <span class="sess-meta__val">10–15 min</span>
+              <span class="sess-meta__val">5 min — sin mínimo</span>
             </div>
             <div class="sess-meta__item">
               <span class="sess-meta__lbl">Tipos</span>
               <span class="sess-meta__val">Mel · Arm · Viaje</span>
             </div>
           </div>
-          <button type="button" class="btn btn--primary" id="btn-start-session" aria-label="Comenzar sesión de entrenamiento">
+          <button type="button" class="btn btn--light" id="btn-start-session" aria-label="Comenzar sesión de entrenamiento">
             ▶ &nbsp; Comenzar sesión
           </button>
         </div>

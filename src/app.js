@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const express = require('express');
+const helmet = require('helmet');
 const logger = require('./lib/logger');
 const cors = require('./middleware/cors');
 const errorHandler = require('./middleware/errorHandler');
@@ -11,6 +12,7 @@ const app = express();
 
 // Middlewares globales
 app.use(cors);
+app.use(helmet());
 app.use(express.json());
 
 // Rutas

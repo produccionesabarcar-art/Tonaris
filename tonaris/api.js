@@ -93,6 +93,16 @@ async function apiSetAlias(userId, alias) {
   return await apiPatch(`/api/users/${userId}/alias`, { alias });
 }
 
+/* --- Password Reset --- */
+async function apiForgotPassword(email) {
+  const res = await fetch(`${API_URL}/api/users/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  return await res.json();
+}
+
 /* --- Helpers --- */
 function apiLogout() {
   localStorage.removeItem('tonaris_token');
@@ -104,3 +114,5 @@ function apiGetCurrentUser() {
     return JSON.parse(localStorage.getItem('tonaris_api_user'));
   } catch { return null; }
 }
+
+window.api = { apiForgotPassword };
