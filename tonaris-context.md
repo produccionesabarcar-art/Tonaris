@@ -434,8 +434,23 @@ Detalles técnicos:
 | Validación password en registro | `src/controllers/users.js` | Regex (min 8 chars, mayúscula, minúscula, dígito) + password ≠ email | ✅ |
 | CORS | `src/middleware/cors.js` | Orígenes: solo `127.0.0.1:5500`, `localhost:5500`, `localhost:5173`, `https://abarcaraudio.netlify.app` | ✅ |
 
-### 6.10 Despliegue panel admin — PENDIENTE
-- [ ] Aún no desplegado. Plan: Netlify, build command `cd admin && npm ci && npm run build`, publish directory `admin/dist`. Actualizar `vite.config.js` / variable de entorno para que el proxy apunte a Render en vez de `127.0.0.1:3000`.
+### 6.10 Despliegue panel admin — ✅ LISTO PARA DESPLEGAR (12/07/2026)
+- [x] `admin/src/api/client.js` — URL base dinámica: usa `import.meta.env.VITE_API_URL` si está definida, o string vacío (proxy Vite) en desarrollo local. `Login.jsx` también actualizado para usar la misma lógica.
+- [x] `admin/vite.config.js` — proxy a `http://127.0.0.1:3000` intacto para desarrollo local.
+- [x] `npm run build` compila sin errores. `admin/dist/` generado correctamente.
+- [ ] Despliegue manual en Netlify (Javier):
+
+**Instrucciones de despliegue en Netlify:**
+1. "Add new site" → "Import an existing project" → conectar repo `produccionesabarcar-art/Tonaris`, rama `main`
+2. Configurar build:
+   - **Base directory:** `admin`
+   - **Build command:** `npm ci && npm run build`
+   - **Publish directory:** `dist`
+3. Agregar variable de entorno:
+   - Key: `VITE_API_URL`, Value: `https://tonaris.onrender.com`
+4. Deploy. Netlify asignará un dominio tipo `tonaris-admin-xxxxx.netlify.app`
+5. Probar login con credenciales admin (`javier@abarcar.co`)
+6. (Opcional) Configurar dominio personalizado `admin.abarcaraudio.com`
 
 ### 6.11 Dominios personalizados — PENDIENTE (opcional)
 | Dominio | Servicio |
@@ -458,7 +473,7 @@ SSL automático vía Let's Encrypt en ambos servicios.
 | Landing con texto/CTA desactualizados | Media | ✅ Resuelto — implementado en 6.8 (11/07/2026) |
 | PATH PostgreSQL no permanente en Windows | Baja | Pendiente, no bloquea nada |
 | Sin tests automatizados | Media | Pendiente — CI actual solo valida sintaxis |
-| Panel admin sin desplegar | Media | Pendiente |
+| Panel admin sin desplegar | Media | ✅ Resuelto — `client.js` con URL dinámica, build listo, instrucciones de deploy en Netlify en Sección 6.10 (12/07/2026) |
 | Prisma no introducido | Baja | Descartado por ahora — el proyecto usa `pg` directo y funciona bien así |
 
 ---

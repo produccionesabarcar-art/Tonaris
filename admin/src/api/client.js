@@ -1,4 +1,5 @@
-const BASE = '/api';
+const API_ORIGIN = import.meta.env.VITE_API_URL || '';
+export const BASE = API_ORIGIN ? `${API_ORIGIN}/api` : '/api';
 
 function getToken() {
   return localStorage.getItem('tonaris_token');
