@@ -21,6 +21,10 @@ async function register(req, res, next) {
       return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres, un número, una mayúscula y una minúscula' });
     }
 
+    if (password.toLowerCase() === email.toLowerCase()) {
+      return res.status(400).json({ error: 'La contraseña no puede ser igual a tu correo electrónico.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const userRole = role === 'admin' ? 'admin' : 'estudiante';
 

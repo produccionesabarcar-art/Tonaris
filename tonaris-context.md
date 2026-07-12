@@ -32,7 +32,7 @@
 | Despliegue backend | Render (Free) | — | ✅ live |
 | Despliegue frontends | Netlify | — | ✅ app Tonaris — ⏳ admin pendiente |
 | Cliente HTTP dev | Thunder Client | — | ✅ en VS Code |
-| Envío de emails | — | — | ⏳ por definir (necesario para recuperación de contraseña, ver Sección 6.9) |
+| Envío de emails | Resend SDK | latest | ✅ Resend SDK (`src/services/emailService.js`) |
 
 **NOTAS CRÍTICAS DE ENTORNO:**
 - `localhost` NO resuelve para Node.js en este equipo — usar `127.0.0.1:3000`
@@ -237,8 +237,8 @@ CREATE TABLE migrations (
 | GET | `/api/analytics/trend/:userId/:skillId` | ✅ | Comparación accuracy/avg_ms últimos 7d vs 7d previos (Etapa 7) |
 | GET | `/api/analytics/mastery/:userId` | ✅ | Lista completa de skill_mastery del usuario (Etapa 7) |
 | PATCH | `/api/analytics/daily-goal/:userId` | ✅ | Actualiza daily_goal, solo el propio usuario (Etapa 7) |
-| POST | `/api/users/forgot-password` | ✅ | Recuperación de contraseña — envía email con token (Etapa 6.9) |
-| POST | `/api/users/reset-password` | ✅ | Restablece contraseña con token (Etapa 6.9) |
+| POST | `/api/users/forgot-password` | ❌ | Recuperación de contraseña — envía email con token (Etapa 6.9) |
+| POST | `/api/users/reset-password` | ❌ | Restablece contraseña con token (Etapa 6.9) |
 
 ### 3.6 api.js — funciones disponibles en Tonaris
 
@@ -402,6 +402,12 @@ Pendientes identificados, en orden de trabajo:
 
 **A) Recuperación de contraseña vía email — COMPLETADO ✅**
 
+Detalles técnicos:
+- **SDK email:** Resend (`src/services/emailService.js`) — from real verificado, template HTML oscuro con marca Abarcar, `FRONTEND_URL` desde variable de entorno
+- **Generación de token:** `crypto.randomBytes(32).toString('hex')` — 64 caracteres hex, expira en 1 hora
+- **Link de reseteo:** se arma dinámicamente como `${frontendUrl}/?screen=reset-password&token=${resetToken}`
+- **Validación de contraseña en reseteo:** mínimo 8 caracteres, no puede ser igual al email del usuario
+
 | Componente | Archivo | Estado |
 |---|---|---|
 | Proveedor email | Resend SDK en `package.json` | ✅ |
@@ -413,6 +419,8 @@ Pendientes identificados, en orden de trabajo:
 | `screen-reset-password` | `tonaris/index.html` + `tonaris/main.js` + `tonaris/api.js` | ✅ |
 | Query param parsing | `tonaris/main.js` `init()` — `?screen=reset-password&token=...` | ✅ |
 | Verificación runtime | 7 casos probados, login con nueva contraseña OK | ✅ |
+
+**PENDIENTE:** Prueba visual end-to-end en navegador (falta pulir otras cosas del frontend antes de hacer el `git push` a producción).
 
 **B) Buenas prácticas de seguridad general — auditoría pendiente ⏳**
 Puntos a revisar y reforzar en el backend actual:
@@ -694,4 +702,4 @@ Todo probado en runtime local con el usuario de prueba `testuser1`:
 ---
 
 *Documento actualizado al 11/07/2026.*
-*Próxima acción: continuar rediseño de landing (Sección 6.8), y pedirle a opencode una auditoría de seguridad detallada antes de implementar recuperación de contraseña (Sección 6.9).*
+*Próxima acción: Ejecutar Fase 2 (Seguridad base - Hardening: rate limiting, helmet.js, validación de passwords en registro) y luego preparar el push a producción para probar el flujo de recuperación de contraseña en vivo.*
