@@ -7,6 +7,7 @@ const allowedOrigins = [
   'http://localhost:5500',
   'http://localhost:5173',
   'https://abarcaraudio.netlify.app',
+  'https://earnest-froyo-6ffa81.netlify.app',
 ];
 
 function cors(req, res, next) {
