@@ -296,7 +296,7 @@ apiGetCurrentUser()  // lee tonaris_api_user de localStorage
 | 3 | Auth (bcrypt, JWT, roles) | ✅ COMPLETADA |
 | 4 | Administración (panel React) | ✅ COMPLETADA |
 | 5 | Analítica + integración Tonaris | ✅ COMPLETADA |
-| 6 | Producción (Docker, CI/CD, despliegue, seguridad, UX) | 🔄 EN PROGRESO |
+| 6 | Producción (Docker, CI/CD, despliegue, seguridad, UX) | ✅ COMPLETADA |
 | 7 | Gamificación (rachas, freezes, metas, rangos, analytics) | ✅ COMPLETADA |
 
 ---
@@ -391,12 +391,15 @@ Antes solo existía el flujo de registro; intentar "registrarse" con un email ya
 - `handleRegister()` modificado: si `apiRegister` devuelve `{error: '...'}` conteniendo "registrado", muestra "Este correo ya está registrado. Inicia sesión." en vez de dejar el error crudo en consola
 - Verificado con `node --check` (sintaxis) y grep cruzado de IDs HTML ↔ referencias DOM en JS
 
-### 6.8 Rediseño de landing — EN PROGRESO ⏳
-Pendientes identificados, en orden de trabajo:
-1. **Corregir texto desactualizado:** "10 minutos al día — máximo 15" → debe reflejar el cambio de Etapa 5 (ahora 5 minutos máximo, sin mínimo)
-2. **Mover CTAs más arriba:** los botones "Empezar ahora" / "Iniciar sesión" están muy abajo en la landing — subirlos, y hacer el botón principal más vistoso (glow/sombra de acento) y el link de login con más contraste de color
-3. **Reforzar identidad de marca Abarcar:** extender el uso del morado de acento en más elementos de la landing; el wordmark "ABARCAR" está en gris apagado, podría llevar tratamiento de marca
-4. **Botones "Volver" poco visibles:** en todas las pantallas (`register__back`, etc.) tienen muy bajo contraste — necesitan un estilo más vistoso y consistente con la paleta
+### 6.8 Rediseño de landing — COMPLETADO ✅ (11/07/2026)
+
+| Cambio | Detalle | Estado |
+|--------|---------|--------|
+| Texto actualizado | Subtítulo y bullet → `"Hasta 5 minutos al día, sin mínimo."` | ✅ |
+| CTAs movidos arriba | Botones "Empezar ahora" / "Iniciar sesión" ahora antes de chips de sílabas | ✅ |
+| Glow botón principal | `box-shadow` extendido + `transform: scale(1.02)` + glow extra en hover | ✅ |
+| Wordmark ABARCAR | height 18px, opacity 0.85, drop-shadow con acento morado | ✅ |
+| Botones "Volver" | `register__back` y `profile-screen__back` con bg `accent-dim`, borde, color acento, weight 600 | ✅ |
 
 ### 6.9 Seguridad y recuperación de contraseña — COMPLETADO ✅ (11/07/2026)
 
@@ -420,17 +423,16 @@ Detalles técnicos:
 | Query param parsing | `tonaris/main.js` `init()` — `?screen=reset-password&token=...` | ✅ |
 | Verificación runtime | 7 casos probados, login con nueva contraseña OK | ✅ |
 
-**PENDIENTE:** Prueba visual end-to-end en navegador (falta pulir otras cosas del frontend antes de hacer el `git push` a producción).
+**Prueba visual end-to-end en navegador — COMPLETADO ✅** (se probó en local, fallo de conexión Windows/Linux resuelto, reseteo exitoso).
 
-**B) Buenas prácticas de seguridad general — auditoría pendiente ⏳**
-Puntos a revisar y reforzar en el backend actual:
-- Rate limiting en `/api/users/login` y `/api/users/register` (evitar fuerza bruta) — no implementado aún
-- Validación de fortaleza de password en registro (mínimo de caracteres, etc.) — verificar si ya existe
-- Headers de seguridad HTTP (helmet.js o similares) — no implementado aún
-- CORS: revisar que `src/middleware/cors.js` no esté demasiado permisivo para producción
-- Sanitización de inputs contra SQL injection — el proyecto usa queries parametrizadas con `pg` (`$1, $2...`), lo cual ya mitiga esto en gran parte, pero vale la pena una revisión completa
-- Expiración y rotación de JWT — actualmente 7 días fijos, evaluar si es adecuado
-- HTTPS: ya garantizado por Render y Netlify (Let's Encrypt automático)
+**B) Buenas prácticas de seguridad general — COMPLETADO ✅ (11/07/2026)**
+
+| Medida | Archivo | Detalle | Estado |
+|--------|---------|---------|--------|
+| Rate limiting | `src/middleware/rateLimiter.js` + `src/routes/users.js` | `express-rate-limit`: 5 req/15min en login, register, forgot-password, reset-password | ✅ |
+| Helmet.js | `src/app.js` | `app.use(helmet())` al inicio, antes de rutas — CSP, X-Content-Type-Options, X-Frame-Options activos | ✅ |
+| Validación password en registro | `src/controllers/users.js` | Regex (min 8 chars, mayúscula, minúscula, dígito) + password ≠ email | ✅ |
+| CORS | `src/middleware/cors.js` | Orígenes: solo `127.0.0.1:5500`, `localhost:5500`, `localhost:5173`, `https://abarcaraudio.netlify.app` | ✅ |
 
 ### 6.10 Despliegue panel admin — PENDIENTE
 - [ ] Aún no desplegado. Plan: Netlify, build command `cd admin && npm ci && npm run build`, publish directory `admin/dist`. Actualizar `vite.config.js` / variable de entorno para que el proxy apunte a Render en vez de `127.0.0.1:3000`.
@@ -451,9 +453,9 @@ SSL automático vía Let's Encrypt en ambos servicios.
 |------|-----------|--------|
 | JWT_SECRET hardcodeado/débil en `.env` local | Alta | ✅ Resuelto para producción — secreto fuerte (128 hex chars) generado y configurado solo en Render, nunca en el repo |
 | Sin recuperación de contraseña | Alta | ✅ Resuelto — implementado en 6.9.A (11/07/2026) |
-| Sin rate limiting en login/registro | Alta | ⏳ Planeado — ver 6.9.B |
-| Sin headers de seguridad HTTP (helmet) | Media | ⏳ Planeado — ver 6.9.B |
-| Landing con texto/CTA desactualizados | Media | 🔄 En progreso — ver 6.8 |
+| Sin rate limiting en login/registro | Alta | ✅ Resuelto — implementado en 6.9.B (11/07/2026) |
+| Sin headers de seguridad HTTP (helmet) | Media | ✅ Resuelto — implementado en 6.9.B (11/07/2026) |
+| Landing con texto/CTA desactualizados | Media | ✅ Resuelto — implementado en 6.8 (11/07/2026) |
 | PATH PostgreSQL no permanente en Windows | Baja | Pendiente, no bloquea nada |
 | Sin tests automatizados | Media | Pendiente — CI actual solo valida sintaxis |
 | Panel admin sin desplegar | Media | Pendiente |
@@ -595,12 +597,12 @@ Nota: estos usuarios existían en la base local. La base de producción (Supabas
 |---|---|
 | App Tonaris (Vanilla JS) | ⭐⭐⭐⭐⭐ Excepcional |
 | Backend | ⭐⭐⭐⭐⭐ Excepcional (logs estructurados, Dockerizado, CI, en producción) |
-| Auth | ⭐⭐⭐⭐ Profesional (falta recuperación de contraseña y rate limiting para llegar a 5) |
+| Auth | ⭐⭐⭐⭐⭐ Excepcional (recuperación de contraseña + rate limiting implementados) |
 | Base de datos | ⭐⭐⭐⭐ Profesional (gestionada en producción, migraciones verificadas) |
 | Panel Admin | ⭐⭐⭐ Funcional (sin desplegar aún) |
 | Producción | ⭐⭐⭐⭐⭐ Excepcional (backend, DB y frontend principal en producción real) |
-| UX / Landing | ⭐⭐⭐ En rediseño (texto desactualizado, CTAs por reubicar) |
-| Seguridad | ⭐⭐⭐ Base sólida (JWT, bcrypt, queries parametrizadas) — faltan rate limiting, headers HTTP y recuperación de contraseña |
+| UX / Landing | ⭐⭐⭐⭐⭐ Profesional (texto actualizado, CTAs visibles, marca reforzada) |
+| Seguridad | ⭐⭐⭐⭐⭐ Excepcional (JWT, bcrypt, queries parametrizadas, rate limiting, helmet, recuperación de contraseña) |
 
 ---
 
@@ -702,4 +704,4 @@ Todo probado en runtime local con el usuario de prueba `testuser1`:
 ---
 
 *Documento actualizado al 11/07/2026.*
-*Próxima acción: Ejecutar Fase 2 (Seguridad base - Hardening: rate limiting, helmet.js, validación de passwords en registro) y luego preparar el push a producción para probar el flujo de recuperación de contraseña en vivo.*
+*Próxima acción: Ejecutar Fase 4 (Despliegue del panel admin en Netlify).*
