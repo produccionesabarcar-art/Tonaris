@@ -20,10 +20,6 @@ app.use(cors);
 app.use(helmet());
 app.use(express.json());
 
-if (process.env.SENTRY_DSN_BACKEND) {
-  app.use(Sentry.Handlers.requestHandler());
-}
-
 // Rutas
 const usersRouter = require('./routes/users');
 const sessionsRouter = require('./routes/sessions');
@@ -42,7 +38,7 @@ app.get('/health', (req, res) => {
 
 // Manejo de errores — siempre al final
 if (process.env.SENTRY_DSN_BACKEND) {
-  app.use(Sentry.Handlers.errorHandler());
+  Sentry.setupExpressErrorHandler(app);
 }
 app.use(errorHandler);
 
