@@ -8,7 +8,7 @@
 
 /* Sentry — error tracking (inicialización condicional)
    Javier: reemplazar SENTRY_DSN_FRONTEND con el DSN del proyecto frontend en Sentry */
-const SENTRY_DSN_FRONTEND = '';
+const SENTRY_DSN_FRONTEND = 'https://b6ea63565c893b805768d2a3c1066197@o4511728952344576.ingest.us.sentry.io/4511729171890176';
 if (window.Sentry && SENTRY_DSN_FRONTEND) {
   Sentry.init({ dsn: SENTRY_DSN_FRONTEND });
 }
