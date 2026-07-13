@@ -742,16 +742,16 @@ Todo probado en runtime local con el usuario de prueba `testuser1`:
   ```
 - Sentry no se inicializa si `SENTRY_DSN_FRONTEND` está vacío (local/dev)
 
-### 14.3 Tareas manuales pendientes (Javier)
-| # | Tarea | Dónde | Detalle |
-|---|-------|-------|---------|
-| J1 | Crear cuenta en UptimeRobot | https://uptimerobot.com | Monitoreo del health check |
-| J2 | Crear cuenta en Sentry | https://sentry.io | Error tracking |
-| J3 | Crear proyectos en Sentry | Sentry dashboard | Backend (Node) + Frontend (JS) |
-| J4 | Configurar `SENTRY_DSN_BACKEND` | Render dashboard | Variable de entorno en `tonaris-api` |
-| J5 | Configurar monitor en UptimeRobot | UptimeRobot dashboard | URL: `https://tonaris.onrender.com/health`, intervalo 5 min |
-| J6 | Reemplazar DSN frontend | `tonaris/main.js` | Constante `SENTRY_DSN_FRONTEND` con DSN real de Sentry |
-| J7 | Probar errores en Sentry | Backend y frontend | Forzar error 500 y error JS, verificar en dashboard |
+### 14.3 Tareas manuales realizadas (Javier)
+| # | Tarea | Estado |
+|---|-------|--------|
+| J1 | Cuenta UptimeRobot creada | ✅ |
+| J2 | Cuenta Sentry creada | ✅ |
+| J3 | Proyectos Sentry (Backend + Frontend) creados | ✅ |
+| J4 | `SENTRY_DSN_BACKEND` configurado en Render | ✅ |
+| J5 | Monitor UptimeRobot activo — `https://tonaris.onrender.com/health` cada 5 min | ✅ |
+| J6 | DSN frontend reemplazado en `tonaris/main.js` | ✅ |
+| J7 | Prueba de errores en Sentry — pendiente (no bloqueante) | ⏳ |
 
 ### 14.4 Archivos modificados
 | Archivo | Cambio |
@@ -764,4 +764,4 @@ Todo probado en runtime local con el usuario de prueba `testuser1`:
 ---
 
 *Documento actualizado al 13/07/2026.*
-*Próxima acción: completar tareas manuales J1-J7 (UptimeRobot + Sentry) y marcar integraciones como verificadas en producción.*
+*Próxima acción: prueba manual de errores en Sentry (J7) y transición a Fase 6 — verificar integración end-to-end en producción.*
