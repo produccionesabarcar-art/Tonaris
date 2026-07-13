@@ -1,6 +1,11 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+const Sentry = require('@sentry/node');
+if (process.env.SENTRY_DSN_BACKEND) {
+  Sentry.init({ dsn: process.env.SENTRY_DSN_BACKEND });
+}
+
 const express = require('express');
 const helmet = require('helmet');
 const logger = require('./lib/logger');
@@ -14,6 +19,10 @@ const app = express();
 app.use(cors);
 app.use(helmet());
 app.use(express.json());
+
+if (process.env.SENTRY_DSN_BACKEND) {
+  app.use(Sentry.Handlers.requestHandler());
+}
 
 // Rutas
 const usersRouter = require('./routes/users');
@@ -32,6 +41,9 @@ app.get('/health', (req, res) => {
 });
 
 // Manejo de errores — siempre al final
+if (process.env.SENTRY_DSN_BACKEND) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;

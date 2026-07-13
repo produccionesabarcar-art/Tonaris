@@ -715,5 +715,53 @@ Todo probado en runtime local con el usuario de prueba `testuser1`:
 
 ---
 
-*Documento actualizado al 11/07/2026.*
-*Próxima acción: Ejecutar Fase 4 (Despliegue del panel admin en Netlify).*
+## 14. FASE 5 — MONITOREO Y OBSERVABILIDAD (13/07/2026)
+
+**Estado:** ✅ COMPLETADA
+
+### 14.1 Backend — Sentry (`@sentry/node`)
+- Dependencia `@sentry/node ^10.65.0` instalada en `package.json`
+- Inicialización condicional en `src/app.js`:
+  - `Sentry.init()` se ejecuta solo si `process.env.SENTRY_DSN_BACKEND` está definido
+  - `Sentry.Handlers.requestHandler()` como middleware global (antes de rutas)
+  - `Sentry.Handlers.errorHandler()` como penúltimo middleware (antes del errorHandler custom)
+- La variable `SENTRY_DSN_BACKEND` debe configurarse en el dashboard de Render
+- Sin Sentry en local (DSN no definido → no se inicializa)
+
+### 14.2 Frontend — Sentry (CDN + Vanilla JS)
+- SDK cargado via CDN en `tonaris/index.html`:
+  ```html
+  <script src="https://browser.sentry-cdn.com/7.120.2/bundle.min.js" crossorigin="anonymous"></script>
+  ```
+- Inicialización condicional en `tonaris/main.js`:
+  ```js
+  const SENTRY_DSN_FRONTEND = ''; // Javier: reemplazar con DSN del proyecto frontend en Sentry
+  if (window.Sentry && SENTRY_DSN_FRONTEND) {
+    Sentry.init({ dsn: SENTRY_DSN_FRONTEND });
+  }
+  ```
+- Sentry no se inicializa si `SENTRY_DSN_FRONTEND` está vacío (local/dev)
+
+### 14.3 Tareas manuales pendientes (Javier)
+| # | Tarea | Dónde | Detalle |
+|---|-------|-------|---------|
+| J1 | Crear cuenta en UptimeRobot | https://uptimerobot.com | Monitoreo del health check |
+| J2 | Crear cuenta en Sentry | https://sentry.io | Error tracking |
+| J3 | Crear proyectos en Sentry | Sentry dashboard | Backend (Node) + Frontend (JS) |
+| J4 | Configurar `SENTRY_DSN_BACKEND` | Render dashboard | Variable de entorno en `tonaris-api` |
+| J5 | Configurar monitor en UptimeRobot | UptimeRobot dashboard | URL: `https://tonaris.onrender.com/health`, intervalo 5 min |
+| J6 | Reemplazar DSN frontend | `tonaris/main.js` | Constante `SENTRY_DSN_FRONTEND` con DSN real de Sentry |
+| J7 | Probar errores en Sentry | Backend y frontend | Forzar error 500 y error JS, verificar en dashboard |
+
+### 14.4 Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `package.json` | +`@sentry/node ^10.65.0` |
+| `src/app.js` | Sentry init + handlers condicionales |
+| `tonaris/index.html` | Script tag de Sentry CDN |
+| `tonaris/main.js` | Sentry init condicional con DSN frontend |
+
+---
+
+*Documento actualizado al 13/07/2026.*
+*Próxima acción: completar tareas manuales J1-J7 (UptimeRobot + Sentry) y marcar integraciones como verificadas en producción.*

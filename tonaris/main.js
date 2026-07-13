@@ -6,6 +6,13 @@
    Sin framework. Sin dependencias externas. Netlify safe.
    ============================================================ */
 
+/* Sentry — error tracking (inicialización condicional)
+   Javier: reemplazar SENTRY_DSN_FRONTEND con el DSN del proyecto frontend en Sentry */
+const SENTRY_DSN_FRONTEND = '';
+if (window.Sentry && SENTRY_DSN_FRONTEND) {
+  Sentry.init({ dsn: SENTRY_DSN_FRONTEND });
+}
+
 /* ============================================================
    SECCIÓN 1: CONSTANTES Y DATOS PEDAGÓGICOS
    Fuente de verdad del sistema ABARCAR — no modificar
