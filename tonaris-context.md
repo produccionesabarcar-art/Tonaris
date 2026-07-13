@@ -434,23 +434,20 @@ Detalles técnicos:
 | Validación password en registro | `src/controllers/users.js` | Regex (min 8 chars, mayúscula, minúscula, dígito) + password ≠ email | ✅ |
 | CORS | `src/middleware/cors.js` | Orígenes: solo `127.0.0.1:5500`, `localhost:5500`, `localhost:5173`, `https://abarcaraudio.netlify.app` | ✅ |
 
-### 6.10 Despliegue panel admin — ✅ LISTO PARA DESPLEGAR (12/07/2026)
-- [x] `admin/src/api/client.js` — URL base dinámica: usa `import.meta.env.VITE_API_URL` si está definida, o string vacío (proxy Vite) en desarrollo local. `Login.jsx` también actualizado para usar la misma lógica.
-- [x] `admin/vite.config.js` — proxy a `http://127.0.0.1:3000` intacto para desarrollo local.
-- [x] `npm run build` compila sin errores. `admin/dist/` generado correctamente.
-- [ ] Despliegue manual en Netlify (Javier):
+### 6.10 Despliegue panel admin — ✅ COMPLETADA (12/07/2026)
 
-**Instrucciones de despliegue en Netlify:**
-1. "Add new site" → "Import an existing project" → conectar repo `produccionesabarcar-art/Tonaris`, rama `main`
-2. Configurar build:
-   - **Base directory:** `admin`
-   - **Build command:** `npm ci && npm run build`
-   - **Publish directory:** `dist`
-3. Agregar variable de entorno:
-   - Key: `VITE_API_URL`, Value: `https://tonaris.onrender.com`
-4. Deploy. Netlify asignará un dominio tipo `tonaris-admin-xxxxx.netlify.app`
-5. Probar login con credenciales admin (`javier@abarcar.co`)
-6. (Opcional) Configurar dominio personalizado `admin.abarcaraudio.com`
+**Preparación del build:**
+- `admin/src/api/client.js` — URL base dinámica: usa `import.meta.env.VITE_API_URL` si está definida, o string vacío (proxy Vite) en desarrollo local. `Login.jsx` también actualizado para usar la misma lógica.
+- `admin/vite.config.js` — proxy a `http://127.0.0.1:3000` intacto para desarrollo local.
+- `admin/.env.production` — creado con `VITE_API_URL=https://tonaris.onrender.com`
+- `npm run build` compila sin errores. `admin/dist/` generado correctamente.
+
+**Despliegue en Netlify:**
+- Dominio asignado: `https://earnest-froyo-6ffa81.netlify.app`
+- Build config: base `admin`, comando `npm ci && npm run build`, publish `dist`
+- Variable de entorno: `VITE_API_URL=https://tonaris.onrender.com`
+- Usuario admin (`javier@abarcar.co`) creado en Supabase con rol `admin`
+- CORS actualizado en `src/middleware/cors.js` — agregado `https://earnest-froyo-6ffa81.netlify.app` a la lista blanca
 
 ### 6.11 Dominios personalizados — PENDIENTE (opcional)
 | Dominio | Servicio |
