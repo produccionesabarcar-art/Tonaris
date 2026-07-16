@@ -786,21 +786,45 @@ Todo probado en runtime local con el usuario de prueba `testuser1`:
 - `src/db/pool` — mockeado con `jest.mock()` para no depender de Postgres en tests
 - `src/middleware/rateLimiter` — reemplazado por middleware passtrough para evitar rate limiting en tests
 
-### 15.4 Resultado de verificación
+---
+
+## 16. FASE 7 — COBERTURA DE TESTS CRÍTICOS Y CI BÁSICO (15/07/2026)
+
+**Estado:** ✅ COMPLETADA
+
+### 16.1 Nuevos archivos de test
+| Archivo | Tests | Descripción |
+|---------|-------|-------------|
+| `tests/auth-login.test.js` | 4 | Login exitoso, email no registrado, password incorrecto, campos vacíos |
+| `tests/auth-password.test.js` | 8 | Forgot-password (3) + Reset-password (5) |
+| `tests/middleware/auth.test.js` | 6 | `authenticate` (3) + `authorizeAdmin` (3) |
+
+### 16.2 Estrategia de mocks adicionales
+- `bcrypt` — mockeado en `auth-login.test.js` para controlar `compare()` (true/false)
+- `jsonwebtoken` — mockeado en middleware tests para controlar `verify()` (payload válido vs error)
+- `src/services/emailService` — mockeado en `auth-password.test.js` para evitar envío real de emails
+
+### 16.3 CI — GitHub Actions
+| Archivo | Evento | Pasos |
+|---------|--------|-------|
+| `.github/workflows/test.yml` | Push/PR a `main` | `checkout` → `setup-node@v4` (Node 24) → `npm ci` → `npm test` |
+
+Workflow separado del `ci.yml` existente (que solo verifica sintaxis). Se ejecuta en cada push y PR a main.
+
+### 16.4 Resultado de verificación
 ```
-Test Suites: 2 passed, 2 total
-Tests:       5 passed, 5 total
+Test Suites: 5 passed, 5 total
+Tests:       23 passed, 23 total
 ```
 
-### 15.5 Pendiente para futuro
-- Tests de login, forgot-password, reset-password
-- Tests de sesiones (`POST /api/sessions`)
-- Tests de analytics (streak, summary, leaderboard)
-- Tests del middleware auth (token inválido, expirado, sin token)
-- Integración con CI (ampliar GitHub Actions para correr `npm test`)
-- Cobertura de código con `--coverage`
+### 16.5 Pendiente para futuro
+- Tests de sesiones (`POST /api/sessions` con results)
+- Tests de analytics (streak, summary, leaderboard, trend, mastery)
+- Tests de progreso (`GET /api/progress/:userId`)
+- Cobertura de código con `--coverage` y reporte
+- Ampliar CI para subir reporte de cobertura
 
 ---
 
 *Documento actualizado al 15/07/2026.*
-*Próxima acción: expandir cobertura de tests (login, sesiones, analytics) e integrar con CI.*
+*Próxima acción: tests de sesiones y analytics.*
