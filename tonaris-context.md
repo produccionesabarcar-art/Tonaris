@@ -763,5 +763,44 @@ Todo probado en runtime local con el usuario de prueba `testuser1`:
 
 ---
 
-*Documento actualizado al 13/07/2026.*
-*Próxima acción: prueba manual de errores en Sentry (J7) y transición a Fase 6 — verificar integración end-to-end en producción.*
+## 15. FASE 6 — TESTING AUTOMATIZADO (15/07/2026)
+
+**Estado:** ✅ COMPLETADA
+
+### 15.1 Stack de testing
+| Herramienta | Versión | Propósito |
+|-------------|---------|-----------|
+| Jest | ^30.4.2 | Test runner + assertions |
+| Supertest | ^7.2.2 | Peticiones HTTP a la app Express |
+
+### 15.2 Archivos creados/modificados
+| Archivo | Cambio |
+|---------|--------|
+| `package.json` | `"test": "jest --forceExit --detectOpenHandles"` + devDependencies `jest`, `supertest` |
+| `jest.config.js` | Config: testEnvironment `node`, roots `tests/`, clearMocks, verbose |
+| `src/app.js` | `app.listen()` condicionado con `require.main === module` — evita que el servidor arranque al importar en tests |
+| `tests/health.test.js` | Test de `GET /health` — 200 + body `{ status: 'ok', project: 'Tonaris API' }` |
+| `tests/auth.test.js` | Tests de `POST /api/users/register` — éxito, campos vacíos, contraseña débil, email duplicado |
+
+### 15.3 Estrategia de mocks
+- `src/db/pool` — mockeado con `jest.mock()` para no depender de Postgres en tests
+- `src/middleware/rateLimiter` — reemplazado por middleware passtrough para evitar rate limiting en tests
+
+### 15.4 Resultado de verificación
+```
+Test Suites: 2 passed, 2 total
+Tests:       5 passed, 5 total
+```
+
+### 15.5 Pendiente para futuro
+- Tests de login, forgot-password, reset-password
+- Tests de sesiones (`POST /api/sessions`)
+- Tests de analytics (streak, summary, leaderboard)
+- Tests del middleware auth (token inválido, expirado, sin token)
+- Integración con CI (ampliar GitHub Actions para correr `npm test`)
+- Cobertura de código con `--coverage`
+
+---
+
+*Documento actualizado al 15/07/2026.*
+*Próxima acción: expandir cobertura de tests (login, sesiones, analytics) e integrar con CI.*

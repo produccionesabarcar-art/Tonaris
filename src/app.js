@@ -44,16 +44,18 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, '0.0.0.0', async () => {
-  logger.info(`Servidor corriendo en http://localhost:${PORT}`);
-  await runMigrations().catch(err => {
-    logger.error(err, 'Migraciones fallidas');
-    process.exit(1);
+if (require.main === module) {
+  const server = app.listen(PORT, '0.0.0.0', async () => {
+    logger.info(`Servidor corriendo en http://localhost:${PORT}`);
+    await runMigrations().catch(err => {
+      logger.error(err, 'Migraciones fallidas');
+      process.exit(1);
+    });
   });
-});
 
-server.on('error', (err) => {
-  logger.error(err, 'Error al iniciar servidor');
-});
+  server.on('error', (err) => {
+    logger.error(err, 'Error al iniciar servidor');
+  });
+}
 
 module.exports = app;
