@@ -12,6 +12,7 @@ const logger = require('./lib/logger');
 const cors = require('./middleware/cors');
 const errorHandler = require('./middleware/errorHandler');
 const { runMigrations } = require('./db/migrations/migrationRunner');
+const pool = require('./db/pool');
 
 const app = express();
 
@@ -43,9 +44,10 @@ if (process.env.SENTRY_DSN_BACKEND) {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
+let server;
 
 if (require.main === module) {
-  const server = app.listen(PORT, '0.0.0.0', async () => {
+  server = app.listen(PORT, '0.0.0.0', async () => {
     logger.info(`Servidor corriendo en http://localhost:${PORT}`);
     await runMigrations().catch(err => {
       logger.error(err, 'Migraciones fallidas');
@@ -57,5 +59,24 @@ if (require.main === module) {
     logger.error(err, 'Error al iniciar servidor');
   });
 }
+
+function shutdown(signal) {
+  return () => {
+    logger.info(`${signal} recibido. Cerrando servidor y pool de BD...`);
+    if (server) {
+      server.close(() => {
+        pool.end(() => {
+          logger.info('Pool de BD cerrado. Proceso terminado.');
+          process.exit(0);
+        });
+      });
+    } else {
+      pool.end(() => process.exit(0));
+    }
+  };
+}
+
+process.on('SIGTERM', shutdown('SIGTERM'));
+process.on('SIGINT', shutdown('SIGINT'));
 
 module.exports = app;

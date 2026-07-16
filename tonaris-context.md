@@ -826,5 +826,65 @@ Tests:       23 passed, 23 total
 
 ---
 
+## 17. FASE 8 — CALIDAD FINAL, COBERTURA Y PULIDO DE PRODUCCIÓN (15/07/2026)
+
+**Estado:** ✅ COMPLETADA
+
+### 17.1 Cobertura de código
+| Herramienta | Configuración |
+|-------------|---------------|
+| `jest --coverage` | Script `test:coverage` en `package.json` |
+| Reporte | `coverage/` generado automáticamente (gitignored) |
+| Umbrales | lines: 40%, functions: 15%, branches: 30%, statements: 40% |
+
+Archivos con cobertura ≥70%:
+- `src/middleware/auth.js` — 100%
+- `src/middleware/rateLimiter.js` — 100%
+- `src/routes/*` — 100% (routes son passthrough)
+- `src/lib/logger.js` — 100%
+- `src/controllers/users.js` — 70.45%
+- `src/middleware/cors.js` — 76.92%
+- `src/db/pool.js` — 83.33%
+- `src/app.js` — 67.34%
+
+Archivos pendientes (cobertura <30%): `analytics.js`, `sessions.js`, `progress.js`, `emailService.js`, `migrationRunner.js`, `ranks.js`, `errorHandler.js`.
+
+### 17.2 CI — Cobertura en pipeline
+`.github/workflows/test.yml` actualizado: `npm test` → `npm run test:coverage`. El pipeline falla si la cobertura global baja de los umbrales configurados.
+
+### 17.3 Graceful Shutdown
+`src/app.js`:
+- Importa `pool` de `db/pool.js` para cerrar conexiones explícitamente
+- Manejadores para `SIGTERM` y `SIGINT`:
+  - Cierra el servidor HTTP (`server.close()`)
+  - Cierra el pool de BD (`pool.end()`)
+  - Log final y `process.exit(0)`
+- Los handlers se registran siempre (también en tests), pero usan un guard `if (server)` para no ejecutar `server.close()` cuando no hay servidor activo
+
+### 17.4 Console.log residual
+✅ Verificado: no existe `console.log/error/warn` en `src/`. Toda la salida usa `pino` (logger).
+
+### 17.5 Estado final del proyecto
+
+| Dimensión | Estado |
+|-----------|--------|
+| Backend (Express) | ✅ En producción (Render), con graceful shutdown |
+| Frontend Tonaris | ✅ En producción (Netlify) |
+| Panel Admin | ✅ En producción (Netlify) |
+| Base de datos | ✅ PostgreSQL local + Supabase (producción) |
+| Auth + Seguridad | ✅ JWT, bcrypt, rate limiting, helmet, recovery de contraseña |
+| Monitoreo | ✅ Sentry (backend + frontend), UptimeRobot |
+| Testing | ✅ 23 tests, 5 suites, cobertura configurada |
+| CI | ✅ 2 workflows: syntax check + tests con cobertura |
+| Gamificación | ✅ Rangos, rachas, freezes, skill_mastery |
+
+### 17.6 Pendientes post-Fase 8
+- Tests de sesiones (`POST /api/sessions`), analytics y progreso
+- Migrar a cobertura > 60%
+- Dominios personalizados (`api.abarcaraudio.com`, `admin.abarcaraudio.com`)
+- Pruebas end-to-end en producción (Sentry J7 pendiente)
+
+---
+
 *Documento actualizado al 15/07/2026.*
-*Próxima acción: tests de sesiones y analytics.*
+*Próxima acción: expandir cobertura de tests a sesiones y analytics.*
