@@ -1,6 +1,6 @@
 # Tonaris — Documento de Contexto para Agentes Autónomos
 > Leer este documento completo antes de ejecutar cualquier acción.
-> Contexto actualizado al 11/07/2026.
+> Contexto actualizado al 15/07/2026.
 
 ---
 
@@ -24,13 +24,13 @@
 | Base de datos (local) | PostgreSQL | v18 | ✅ |
 | Base de datos (producción) | PostgreSQL gestionado (Supabase) | — | ✅ desplegada |
 | Auth | bcrypt + jsonwebtoken | latest | ✅ |
-| Frontend admin | React + Vite | Vite v8 | ✅ en `admin/` — ⏳ sin desplegar |
+| Frontend admin | React + Vite | Vite v8 | ✅ en `admin/` — ✅ desplegado en Netlify |
 | Frontend app | Vanilla JS | — | ✅ en `tonaris/` |
 | Logs | pino + pino-pretty | latest | ✅ implementado |
 | Contenedor | Docker | node:24-alpine | ✅ |
-| CI | GitHub Actions | — | ✅ básico (`npm ci` + `node --check`) |
+| CI | GitHub Actions | — | ✅ 2 workflows: `ci.yml` (syntax check) + `test.yml` (tests con cobertura) |
 | Despliegue backend | Render (Free) | — | ✅ live |
-| Despliegue frontends | Netlify | — | ✅ app Tonaris — ⏳ admin pendiente |
+| Despliegue frontends | Netlify | — | ✅ app Tonaris + ✅ admin desplegado |
 | Cliente HTTP dev | Thunder Client | — | ✅ en VS Code |
 | Envío de emails | Resend SDK | latest | ✅ Resend SDK (`src/services/emailService.js`) |
 
@@ -298,6 +298,9 @@ apiGetCurrentUser()  // lee tonaris_api_user de localStorage
 | 5 | Analítica + integración Tonaris | ✅ COMPLETADA |
 | 6 | Producción (Docker, CI/CD, despliegue, seguridad, UX) | ✅ COMPLETADA |
 | 7 | Gamificación (rachas, freezes, metas, rangos, analytics) | ✅ COMPLETADA |
+| 8 | Testing automatizado (Jest, Supertest) | ✅ COMPLETADA |
+| 9 | Cobertura de tests críticos y CI básico | ✅ COMPLETADA |
+| 10 | Calidad final, cobertura y graceful shutdown | ✅ COMPLETADA |
 
 ---
 
@@ -333,7 +336,7 @@ Todos los cambios se hicieron en `tonaris/main.js`, `tonaris/styles.css` e `inde
 
 ---
 
-## 6. ETAPA 6 — PRODUCCIÓN, SEGURIDAD Y UX (en progreso)
+## 6. ETAPA 6 — PRODUCCIÓN, SEGURIDAD Y UX
 
 **Cambio de plan importante:** Railway ya no ofrece tier gratuito permanente (solo $5 de crédito el primer mes, luego $1/mes) — no alcanza para correr backend + Postgres 24/7 gratis. Se optó por **Render + Supabase**, que sí tienen tiers gratuitos reales y sostenibles.
 
@@ -363,7 +366,7 @@ CMD ["node", "src/app.js"]
 - npm ci
 - node --check src/app.js   # valida sintaxis, no requiere DB ni puerto
 ```
-Sin tests automatizados todavía (no hay framework de tests en el proyecto) — el chequeo es solo sintáctico. Ampliar cuando existan tests reales.
+Actualmente existen 23 tests automatizados con Jest + Supertest (ver Fases 8-10). El chequeo sintáctico es solo un primer filtro rápido.
 
 ### 6.4 Base de datos en producción — Supabase ✅
 - Proyecto: `tonaris-db`, organización `AbarcarAudio`, región `sa-east-1` (São Paulo)
@@ -469,8 +472,8 @@ SSL automático vía Let's Encrypt en ambos servicios.
 | Sin headers de seguridad HTTP (helmet) | Media | ✅ Resuelto — implementado en 6.9.B (11/07/2026) |
 | Landing con texto/CTA desactualizados | Media | ✅ Resuelto — implementado en 6.8 (11/07/2026) |
 | PATH PostgreSQL no permanente en Windows | Baja | Pendiente, no bloquea nada |
-| Sin tests automatizados | Media | Pendiente — CI actual solo valida sintaxis |
-| Panel admin sin desplegar | Media | ✅ Resuelto — `client.js` con URL dinámica, build listo, instrucciones de deploy en Netlify en Sección 6.10 (12/07/2026) |
+| Sin tests automatizados | Media | ✅ Resuelto — 23 tests con Jest + Supertest, cobertura configurada, CI en test.yml |
+| Panel admin sin desplegar | Media | ✅ Resuelto — desplegado en Netlify (12/07/2026) |
 | Prisma no introducido | Baja | Descartado por ahora — el proyecto usa `pg` directo y funciona bien así |
 
 ---
@@ -611,7 +614,7 @@ Nota: estos usuarios existían en la base local. La base de producción (Supabas
 | Backend | ⭐⭐⭐⭐⭐ Excepcional (logs estructurados, Dockerizado, CI, en producción) |
 | Auth | ⭐⭐⭐⭐⭐ Excepcional (recuperación de contraseña + rate limiting implementados) |
 | Base de datos | ⭐⭐⭐⭐ Profesional (gestionada en producción, migraciones verificadas) |
-| Panel Admin | ⭐⭐⭐ Funcional (sin desplegar aún) |
+| Panel Admin | ⭐⭐⭐⭐ Desplegado en Netlify |
 | Producción | ⭐⭐⭐⭐⭐ Excepcional (backend, DB y frontend principal en producción real) |
 | UX / Landing | ⭐⭐⭐⭐⭐ Profesional (texto actualizado, CTAs visibles, marca reforzada) |
 | Seguridad | ⭐⭐⭐⭐⭐ Excepcional (JWT, bcrypt, queries parametrizadas, rate limiting, helmet, recuperación de contraseña) |
@@ -821,8 +824,7 @@ Tests:       23 passed, 23 total
 - Tests de sesiones (`POST /api/sessions` con results)
 - Tests de analytics (streak, summary, leaderboard, trend, mastery)
 - Tests de progreso (`GET /api/progress/:userId`)
-- Cobertura de código con `--coverage` y reporte
-- Ampliar CI para subir reporte de cobertura
+- Subir reporte de cobertura a servicio externo (Codecov, Coveralls)
 
 ---
 
