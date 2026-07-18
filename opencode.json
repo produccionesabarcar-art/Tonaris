@@ -1,0 +1,41 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openrouter": {
+      "npm": "@ai-sdk/openrouter",
+      "name": "OpenRouter",
+      "options": {
+        "apiKey": "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"
+      }
+    }
+  },
+  "agent": {
+    "orchestrator": {
+      "mode": "primary",
+      "model": "openrouter/deepseek/deepseek-chat:free",
+      "description": "Orquestador. Delegas todo. NUNCA escribes código.",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "task": {
+          "*": "allow"
+        }
+      }
+    },
+    "frontend-builder": {
+      "mode": "subagent",
+      "model": "openrouter/deepseek/deepseek-chat:free",
+      "description": "Experto en React + Vite + Tailwind. Crea componentes en kids/."
+    },
+    "api-connector": {
+      "mode": "subagent",
+      "model": "openrouter/deepseek/deepseek-chat:free",
+      "description": "Conecta formularios al backend y maneja JWT/localStorage."
+    },
+    "reviewer": {
+      "mode": "subagent",
+      "model": "openrouter/deepseek/deepseek-chat:free",
+      "description": "Revisa errores, sintaxis y que no toque admin/ ni tonaris/."
+    }
+  }
+}

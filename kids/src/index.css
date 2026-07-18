@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-fredoka: 'Fredoka One', cursive;
+  --font-quicksand: 'Quicksand', sans-serif;
+  --color-parchment: #F4E8C8;
+  --color-navy: #1E3A5F;
+  --color-green-deep: #1E8449;
+  --color-gold: #F1C40F;
+  --color-leaf: #7CB342;
+  --color-dark: #2C3E50;
+}
+
+body {
+  font-family: 'Quicksand', sans-serif;
+  background-color: #F4E8C8;
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+}

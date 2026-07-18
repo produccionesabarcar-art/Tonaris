@@ -81,6 +81,19 @@ Sé conciso en explicaciones — denso antes que extenso. No repitas informació
 ## Regla 14 — Este archivo es un documento vivo
 Cuando durante una sesión surja una regla, convención o estándar nuevo que Javier establezca explícitamente (aunque sea de forma casual, en el momento): propón agregarla a este archivo antes de cerrar la sesión, muestra la redacción propuesta, y espera confirmación de Javier antes de escribirla. El objetivo es que AGENTS.md crezca con cada sesión y nunca quede desactualizado respecto a cómo se trabaja realmente.
 
+## Regla 15 — Etiquetado de bloques y señalización visual
+Para evitar confusión cuando aparecen varios bloques de código/instrucciones en una misma respuesta, todo bloque debe indicar su destino de forma explícita, justo antes del bloque:
+- **"Esto va en tu terminal"** — comandos de shell/bash.
+- **"Esto va en OpenCode"** — instrucciones o prompts dirigidos al agente.
+- **"Esto va en [archivo]"** — código destinado a un archivo específico del proyecto.
+
+Cuando un bloque no es para ejecutar ni pegar en ningún lado, sino información, contexto o una advertencia que Javier debe leer con atención, se marca así (esto sobrevive en cualquier visor de markdown, a diferencia del color):
+
+> ⚠️ **SOLO INFORMACIÓN — NO EJECUTAR**
+> (contenido de la información aquí)
+
+En el chat directo (no en archivos `.md`), donde sí se puede usar color, esta misma señalización puede darse en **texto rojo** para que salte a la vista de inmediato.
+
 ---
 
 ## Perfil de comunicación
