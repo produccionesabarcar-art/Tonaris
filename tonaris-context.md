@@ -888,5 +888,49 @@ Archivos pendientes (cobertura <30%): `analytics.js`, `sessions.js`, `progress.j
 
 ---
 
+## 18. FRONTEND KIDS — NAVEGACIÓN
+
+**Proyecto:** `kids/` (React + Vite + Tailwind)
+**Propósito:** Portal de registro y login para estudiantes Tonaris Kids.
+
+| Ruta | Componente | Descripción |
+|------|-----------|-------------|
+| `/` | `LandingPage.jsx` | Imagen de selva (`LandingPage.png`) con 2 botones clickeables |
+| `/register` | `RegisterPage.jsx` | 4 campos transparentes sobre `PaseDeEntrada.png` (nombre, institución, correo, contraseña) |
+| `/login` | `LoginPage.jsx` | 2 campos transparentes sobre `BienvenidoDeNuevo.png` (email, password) |
+
+### 18.1 Landing Page
+- Imagen: `kids/public/LandingPage.png` — diseño de selva con logo Tonaris Kids
+- Botón verde "INSCRÍBETE": posición absoluta `top: 65%`, centrado, navega a `/register`
+- Botón azul "INGRESA": posición absoluta `top: 78%`, centrado, navega a `/login`
+- Ambos botones: 100% transparentes (`backgroundColor: transparent`, `border: none`, `outline: none`)
+
+### 18.2 Register Page
+- Componente existente que renderiza `RegisterForm` con 4 campos transparentes
+- Posicionamiento absoluto sobre `PaseDeEntrada.png` (responsive: desktop vs mobile)
+- Campos: nombre, institución, correo, contraseña — validación por campo
+- Conectado a `POST /api/users/register` vía `api/client.js`
+- Estado: ✅ funcional
+
+### 18.3 Login Page
+- Imagen de fondo: `BienvenidoDeNuevo.png`
+- 2 inputs transparentes (email, password) centrados sobre la imagen
+- Link "¿Olvidaste tu contraseña?" (sin funcionalidad aún)
+- Botón "Entrar" transparente
+- Estructura para conectar a `POST /api/users/login`
+- Estado: ⚠️ navegación funcional, login sin conectar a backend aún
+
+### 18.4 Routing
+- `BrowserRouter` configurado en `kids/src/main.jsx`
+- `Routes` en `kids/src/App.jsx`
+- Imagenes servidas desde `kids/public/`
+
+### 18.5 Pendientes
+- [ ] Conectar login a `POST /api/users/login`
+- [ ] Implementar forgot-password
+- [ ] Manejo de sesión (token, redirección post-login)
+
+---
+
 *Documento actualizado al 15/07/2026.*
 *Próxima acción: expandir cobertura de tests a sesiones y analytics.*
