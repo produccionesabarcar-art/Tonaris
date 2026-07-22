@@ -154,6 +154,26 @@ export default function RegisterForm({ onSubmit, loading, error }) {
               </div>
             )
           })}
+          <button
+  type="submit"
+  disabled={loading}
+  style={{
+    position: 'absolute',
+    top: '68%',
+    left: '32%',
+    width: '35%',
+    height: '10%',
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    border: '0px solid red',
+    borderRadius: '8px',
+    outline: 'none',
+    cursor: loading ? 'not-allowed' : 'pointer',
+    opacity: loading ? 0.6 : 1,
+  }}
+  aria-label="INSCRÍBETE"
+>
+  {loading ? 'Registrando...' : ''}
+</button>
         </form>
       </div>
     </div>
