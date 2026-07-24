@@ -888,49 +888,181 @@ Archivos pendientes (cobertura <30%): `analytics.js`, `sessions.js`, `progress.j
 
 ---
 
-## 18. FRONTEND KIDS — NAVEGACIÓN
+## 18. FRONTEND KIDS — PORTAL INFANTIL
 
-**Proyecto:** `kids/` (React + Vite + Tailwind)
-**Propósito:** Portal de registro y login para estudiantes Tonaris Kids.
+**Proyecto:** `kids/` (React + Vite + Tailwind + Swiper.js)
+**Propósito:** Portal infantil de Tonaris con registro, login, selección de guía y menú principal con carrusel 3D. Diseñado con posicionamiento absoluto sobre imágenes, inputs y botones 100% transparentes.
+
+### 18.1 Stack del frontend
+
+| Dependencia | Versión | Propósito |
+|-------------|---------|-----------|
+| react | ^19.0.0 | UI framework |
+| react-dom | ^19.0.0 | Renderizado DOM |
+| react-router-dom | ^7.0.0 | Enrutamiento SPA |
+| swiper | ^14.0.6 | Carrusel 3D (Coverflow) |
+| tailwindcss | ^4.0.0 | Estilos utilitarios |
+| vite | ^6.0.0 | Bundler + dev server |
+
+### 18.2 Estructura de archivos
+
+```
+kids/
+├── public/
+│   ├── LandingPage.png              # Fondo landing (selva + logo Tonaris Kids)
+│   ├── PaseDeEntrada.png            # Fondo formulario registro
+│   ├── BienvenidoDeNuevo.png        # Fondo formulario login
+│   ├── RecuperacionDeContraseña.png # Fondo formulario recuperación
+│   ├── SeleccionDeGuia.png          # Fondo selección de guía
+│   ├── TonarisMenu.png              # Fondo menú principal
+│   ├── CardAventura.png             # Tarjeta sección Aventura
+│   ├── CardEntrenamiento.png        # Tarjeta sección Entrenamiento
+│   ├── CardClasificacion.png        # Tarjeta sección Clasificación
+│   ├── CardRefugio.png              # Tarjeta sección Refugio
+│   └── CardTienda.png               # Tarjeta sección Tienda
+├── src/
+│   ├── api/
+│   │   └── client.js                # HTTP client — detecta entorno (local vs producción)
+│   ├── components/
+│   │   └── RegisterForm.jsx         # Formulario con posicionamiento absoluto
+│   ├── pages/
+│   │   ├── LandingPage.jsx          # Pantalla de inicio
+│   │   ├── RegisterPage.jsx         # Registro con validación
+│   │   ├── LoginPage.jsx            # Login con fetch directo
+│   │   ├── ForgotPasswordPage.jsx   # Recuperación de contraseña
+│   │   ├── SeleccionDeGuiaPage.jsx  # Elegir entre Julieta y Martín
+│   │   └── MenuPage.jsx            # Carrusel 3D con 5 tarjetas
+│   ├── App.jsx                      # Router definición de rutas
+│   ├── main.jsx                     # Entry point (BrowserRouter)
+│   └── index.css                    # Estilos globales Tailwind
+├── index.html                       # HTML root
+├── vite.config.js                   # Proxy /api → 127.0.0.1:3000
+└── package.json
+```
+
+### 18.3 Routing completo
 
 | Ruta | Componente | Descripción |
 |------|-----------|-------------|
-| `/` | `LandingPage.jsx` | Imagen de selva (`LandingPage.png`) con 2 botones clickeables |
-| `/register` | `RegisterPage.jsx` | 4 campos transparentes sobre `PaseDeEntrada.png` (nombre, institución, correo, contraseña) |
-| `/login` | `LoginPage.jsx` | 2 campos transparentes sobre `BienvenidoDeNuevo.png` (email, password) |
+| `/` | `LandingPage` | Imagen de selva con botones INSCRÍBETE / INGRESA |
+| `/register` | `RegisterPage` | Formulario de registro (4 campos sobre `PaseDeEntrada.png`) |
+| `/login` | `LoginPage` | Login (email + password sobre `BienvenidoDeNuevo.png`) |
+| `/forgot-password` | `ForgotPasswordPage` | Recuperación de contraseña sobre `RecuperacionDeContraseña.png` |
+| `/seleccionar-guia` | `SeleccionDeGuiaPage` | Elegir entre Julieta o Martín sobre `SeleccionDeGuia.png` |
+| `/menu` | `MenuPage` | Menú principal con carrusel 3D (alias: `/dashboard`) |
+| `/dashboard` | `MenuPage` | Alias de `/menu` |
+| `/aventura` | Placeholder | "Aventura (Próximamente)" |
+| `/entrenamiento` | Placeholder | "Entrenamiento (Próximamente)" |
+| `/clasificacion` | Placeholder | "Clasificación (Próximamente)" |
+| `/refugio` | Placeholder | "Refugio (Próximamente)" |
+| `/tienda` | Placeholder | "Tienda (Próximamente)" |
 
-### 18.1 Landing Page
-- Imagen: `kids/public/LandingPage.png` — diseño de selva con logo Tonaris Kids
-- Botón verde "INSCRÍBETE": posición absoluta `top: 65%`, centrado, navega a `/register`
-- Botón azul "INGRESA": posición absoluta `top: 78%`, centrado, navega a `/login`
-- Ambos botones: 100% transparentes (`backgroundColor: transparent`, `border: none`, `outline: none`)
+### 18.4 Flujo de usuario completo
 
-### 18.2 Register Page
-- Componente existente que renderiza `RegisterForm` con 4 campos transparentes
-- Posicionamiento absoluto sobre `PaseDeEntrada.png` (responsive: desktop vs mobile)
-- Campos: nombre, institución, correo, contraseña — validación por campo
-- Conectado a `POST /api/users/register` vía `api/client.js`
-- Estado: ✅ funcional
+```
+Landing (/)
+├── INSCRÍBETE → /register → llena datos → /seleccionar-guia
+│                                  └── elige Julieta/Martín → /menu
+│
+├── INGRESA → /login → email + password → /menu
+│
+└── ¿Olvidaste tu contraseña? → /forgot-password → email → enlace
+```
 
-### 18.3 Login Page
-- Imagen de fondo: `BienvenidoDeNuevo.png`
-- 2 inputs transparentes (email, password) centrados sobre la imagen
-- Link "¿Olvidaste tu contraseña?" (sin funcionalidad aún)
-- Botón "Entrar" transparente
-- Estructura para conectar a `POST /api/users/login`
-- Estado: ⚠️ navegación funcional, login sin conectar a backend aún
+### 18.5 Componentes y su implementación
 
-### 18.4 Routing
-- `BrowserRouter` configurado en `kids/src/main.jsx`
-- `Routes` en `kids/src/App.jsx`
-- Imagenes servidas desde `kids/public/`
+#### LandingPage
+- Fondo: `LandingPage.png` en contenedor con `max-width: 900px`
+- Botón "INSCRÍBETE": `position: absolute; top: 65%; left: 50%; width: 25%; height: 9%` — transparente
+- Botón "INGRESA": `position: absolute; top: 78%; left: 50%; width: 25%; height: 9%` — transparente
+- Fondo global: `#2C3E50`
 
-### 18.5 Pendientes
-- [ ] Conectar login a `POST /api/users/login`
-- [ ] Implementar forgot-password
-- [ ] Manejo de sesión (token, redirección post-login)
+#### RegisterPage + RegisterForm
+- RegisterPage maneja estado: `loading`, `error` — llama `registerUser({ nombre, institucion, correo, contrasena })`
+- Fondo: `PaseDeEntrada.png`
+- RegisterForm renderiza 4 campos con posicionamiento absoluto:
+  | Campo | Desktop | Mobile |
+  |-------|---------|--------|
+  | Nombre | top: 40.8%, left: 21.85%, width: 26% | top: 36%, left: 5%, width: 90% |
+  | Institución | top: 40.8%, right: 16.15%, width: 26% | top: 46%, left: 5%, width: 90% |
+  | Correo | top: 56%, left: 21.85%, width: 26% | top: 56%, left: 5%, width: 90% |
+  | Contraseña | top: 56%, right: 16.15%, width: 26% | top: 66%, left: 5%, width: 90% |
+- Validación: campo requerido, mínimo 3 caracteres (nombre/institución), regex email, mínimo 8 caracteres (contraseña)
+- Al enviar: llama `registerUser()` → guarda `tonaris_token` + `tonaris_user` en localStorage → navega a `/seleccionar-guia`
+
+#### LoginPage
+- Fondo: `BienvenidoDeNuevo.png`
+- Input email: `top: 45%; left: 31.5%; width: 45%` — transparente
+- Input password: `top: 58.5%; left: 31.5%; width: 45%` — transparente
+- Link "¿Olvidaste tu contraseña?" → `/forgot-password` (enlace semi-transparente sobre la imagen)
+- Botón "Entrar": `top: 75%; left: 33.5%; width: 34%; height: 60px` — transparente
+- Fetch directo a `/api/users/login` → guarda token + user → navega a `/` (redirige a menu)
+- Manejo de errores: muestra mensaje en posición `top: 32%`
+
+#### ForgotPasswordPage
+- Fondo: `RecuperacionDeContraseña.png`
+- Input email: `top: 54%; left: 34%; width: 38.5%`
+- Botón "ENVIAR ENLACE": `top: 66%; left: 35%; width: 30%; height: 60px`
+- Link "Volver": `top: 8%` — navega a `/login`
+- Mensajes de error/success en `top: 42%`
+- Conectado a `POST /api/users/forgot-password`
+
+#### SeleccionDeGuiaPage
+- Fondo: `SeleccionDeGuia.png`
+- Botón "JULIETA": `top: 79%; left: 17%; width: 29%; height: 10%`
+- Botón "MARTÍN": `top: 79%; right: 18%; width: 28%; height: 10%`
+- Ambos navegan a `/dashboard` (alias de `/menu`)
+- Pendiente: conectar selección al backend (actualizar user con alias/guía)
+
+#### MenuPage (carrusel 3D)
+- Fondo: `TonarisMenu.png` — cubre toda la pantalla con `object-fit: contain`
+- Swiper.js con effect `coverflow`:
+  - `rotate: 15`, `depth: 150`, `modifier: 1.5`, `slideShadows: false`
+  - `slidesPerView: 5`, `centeredSlides: true`, `initialSlide: 2`
+  - Keyboard + Mousewheel habilitados
+  - `paddingTop: 180px` para bajar el carrusel sobre el fondo
+- 5 tarjetas: Entrenamiento, Clasificación, Aventura, Refugio, Tienda
+- Cada tarjeta: `width: 200px; height: 280px` con `drop-shadow` y cursor pointer
+- Efecto de fade lateral: `linear-gradient(to right, #2C3E50 0%, transparent 15%, transparent 85%, #2C3E50 100%)`
+
+### 18.6 API client (`kids/src/api/client.js`)
+
+```javascript
+// Auto-detecta entorno
+const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const url = isDev ? '/api/users/register' : 'https://tonaris.onrender.com/api/users/register'
+
+registerUser({ nombre, institucion, correo, contrasena }) // → { token, user }
+```
+
+- Genera `user_id` como `usr_` + 8 caracteres aleatorios
+- Envía payload: `{ name, email, password, institution, role: 'estudiante', user_id }`
+- Maneja errores: 429 (rate limiting), errores de conexión, errores del servidor
+
+### 18.7 Vite dev server proxy
+
+Configurado en `kids/vite.config.js`: `/api` → `http://127.0.0.1:3000`
+
+Esto permite que en desarrollo local las peticiones a `/api/users/register`, `/api/users/login`, etc. se proxeen automáticamente al backend.
+
+### 18.8 Pendientes de Kids
+
+- [ ] Quitar bordes rojos de depuración en `RegisterForm.jsx` (líneas `rgba(255,0,0,0.1)` y `border: 0px solid red`)
+- [ ] Conectar selección de guía al backend (`PATCH /api/users/:userId` para guardar alias/guía)
+- [ ] Implementar funcionalidad real de las 5 secciones del menú (Aventura, Entrenamiento, Clasificación, Refugio, Tienda)
+- [ ] Dashboard personalizado según el guía seleccionado (Julieta vs Martín)
+- [ ] Implementar tutoriales guiados por Julieta/Martín
+- [ ] Agregar autenticación JWT en rutas protegidas del frontend
+- [ ] Redirigir login a `/menu` en vez de `/`
 
 ---
 
-*Documento actualizado al 15/07/2026.*
-*Próxima acción: expandir cobertura de tests a sesiones y analytics.*
+## 19. CHANGELOG
+
+| Fecha | Cambio |
+|-------|--------|
+| 23/07/2026 | Actualización completa de documentación: sección Kids reescrita con todo el flujo actual (6 páginas, carrusel 3D, registro+login+forgot-password funcionales, selección de guía y menú). CODEMAP actualizado con estructura kids/. README.md y docs/agent.md creados. |
+
+---
+
+*Documento actualizado al 23/07/2026.*
