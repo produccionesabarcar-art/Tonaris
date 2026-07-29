@@ -52,7 +52,7 @@ export default function MenuPage() {
             <SwiperSlide key={index} className="flex items-center justify-center">
               <div
                 className={`relative transition-all duration-300 ${
-                  index === activeIndex ? 'cursor-pointer scale-110' : 'cursor-default opacity-60'
+                  index === activeIndex ? 'cursor-pointer scale-110' : 'cursor-default opacity-90'
                 }`}
                 style={{
                   width: '240px',   // 👈 CAMBIA ESTE NÚMERO para el ancho
