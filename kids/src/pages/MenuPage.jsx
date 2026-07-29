@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { EffectCoverflow, Keyboard, Mousewheel } from 'swiper/modules'
@@ -6,6 +7,7 @@ import 'swiper/css/effect-coverflow'
 
 export default function MenuPage() {
   const navigate = useNavigate()
+  const [activeIndex, setActiveIndex] = useState(2)
 
   const cards = [
     { name: 'Entrenamiento', img: '/CardEntrenamiento.png', route: '/entrenamiento' },
@@ -43,13 +45,22 @@ export default function MenuPage() {
           mousewheel={{ thresholdDelta: 50 }}
           modules={[EffectCoverflow, Keyboard, Mousewheel]}
           className="w-full h-full"
-          style={{ paddingTop: '180px', paddingBottom: '20px' }}
+          style={{ paddingTop: '150px', paddingBottom: '20px' }}
+          onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         >
           {cards.map((card, index) => (
             <SwiperSlide key={index} className="flex items-center justify-center">
               <div
-                className="relative w-[200px] h-[280px] cursor-pointer transition-all duration-300"
-                onClick={() => navigate(card.route)}
+                className={`relative transition-all duration-300 ${
+                  index === activeIndex ? 'cursor-pointer scale-110' : 'cursor-default opacity-60'
+                }`}
+                style={{
+                  width: '240px',   // 👈 CAMBIA ESTE NÚMERO para el ancho
+                  height: '320px',  // 👈 CAMBIA ESTE NÚMERO para el alto
+                  border: '0px solid red',
+                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                }}
+                onClick={() => index === activeIndex && navigate(card.route)}
               >
                 <img
                   src={card.img}
