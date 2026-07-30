@@ -42,9 +42,12 @@ export default function MenuPage() {
           effect="coverflow"
           grabCursor
           centeredSlides
-          slidesPerView={5}
-          spaceBetween={20}
+          loop={true}
+          slidesPerView={3}
+          spaceBetween={30}
           initialSlide={2}
+          preventClicks={false}
+          preventClicksPropagation={false}
           coverflowEffect={{
             rotate: 15,
             stretch: 0,
@@ -62,22 +65,21 @@ export default function MenuPage() {
           {cards.map((card, index) => (
             <SwiperSlide key={index} className="flex items-center justify-center">
               <div
-                className={`relative transition-all duration-300 ${
-                  index === activeIndex ? 'cursor-pointer scale-110' : 'cursor-default opacity-90'
-                }`}
+                className="relative transition-all duration-300 cursor-pointer hover:scale-105"
                 style={{
-                  width: '240px',   // 👈 CAMBIA ESTE NÚMERO para el ancho
-                  height: '320px',  // 👈 CAMBIA ESTE NÚMERO para el alto
-                  border: '0px solid red',
-                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                  width: '240px',
+                  height: '320px',
                 }}
-                onClick={() => index === activeIndex && navigate(card.route)}
+                onClick={() => navigate(card.route)}
               >
                 <img
                   src={card.img}
                   alt={card.name}
                   className="w-full h-full object-contain drop-shadow-[0_15px_12px_rgba(0,0,0,0.45)]"
                 />
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/80 text-white text-sm font-bold px-3 py-1 rounded whitespace-nowrap border border-white/20">
+                  {card.name}
+                </div>
               </div>
             </SwiperSlide>
           ))}

@@ -5,6 +5,8 @@ import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import SeleccionDeGuiaPage from './pages/SeleccionDeGuiaPage'
 import MenuPage from './pages/MenuPage'
+import EntrenamientoPage from './pages/EntrenamientoPage'
+import RefugioPage from './pages/RefugioPage'
 
 export default function App() {
   return (
@@ -17,9 +19,9 @@ export default function App() {
       <Route path="/menu" element={<MenuPage />} />
       <Route path="/dashboard" element={<MenuPage />} />
       <Route path="/aventura" element={<div className="text-white text-center mt-20 text-2xl">Aventura (Próximamente)</div>} />
-      <Route path="/entrenamiento" element={<div className="text-white text-center mt-20 text-2xl">Entrenamiento (Próximamente)</div>} />
+      <Route path="/entrenamiento" element={<EntrenamientoPage />} />
       <Route path="/clasificacion" element={<div className="text-white text-center mt-20 text-2xl">Clasificación (Próximamente)</div>} />
-      <Route path="/refugio" element={<div className="text-white text-center mt-20 text-2xl">Refugio (Próximamente)</div>} />
+      <Route path="/refugio" element={<RefugioPage />} />
       <Route path="/tienda" element={<div className="text-white text-center mt-20 text-2xl">Tienda (Próximamente)</div>} />
     </Routes>
   )
