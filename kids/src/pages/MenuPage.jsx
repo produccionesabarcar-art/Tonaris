@@ -18,12 +18,23 @@ export default function MenuPage() {
   ]
 
   return (
-    <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#2C3E50' }}>
-      <img
-        src="/TonarisMenu.png"
-        alt="Tonaris Kids Menu"
-        className="absolute inset-0 w-full h-full object-contain"
-        draggable={false}
+    <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#0d2818' }}>
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'url(/TonarisMenu.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 2,
+          background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.4) 100%)',
+        }}
       />
 
       <div className="absolute inset-0 flex items-center justify-center">
@@ -71,14 +82,6 @@ export default function MenuPage() {
             </SwiperSlide>
           ))}
         </Swiper>
-
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            zIndex: 5,
-            background: 'linear-gradient(to right, #2C3E50 0%, transparent 15%, transparent 85%, #2C3E50 100%)',
-          }}
-        />
       </div>
     </div>
   )
